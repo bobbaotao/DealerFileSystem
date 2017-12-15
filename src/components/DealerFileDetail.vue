@@ -13,7 +13,14 @@
       </el-row>
       <el-row>
           <el-col :span="22" :offset="1">
-              <AchievementList :dealerID="dealerId" :achListData="achList" :isAllowEdit="true"></AchievementList>
+              <AchievementList v-on:reloadAchList="loadAchievementListFromServer" :dealerID="dealerId" 
+              :achListData="achList" :isAllowEdit="true"></AchievementList>
+          </el-col>
+      </el-row>
+       <el-row>
+          <el-col :span="22" :offset="1">
+              <ContractLogList v-on:reLoadContractLogList="loadContractLogListFromServer" :dealerID="dealerId" 
+              :contractListData="contractList" :isAllowEdit="true"></ContractLogList>
           </el-col>
       </el-row>
   </div>
@@ -23,6 +30,7 @@
 import Utility from '../utility/index';
 import BasicInfo from './BasicInfo';
 import AchievementList from './AchievementList';
+import ContractLogList from './ContractLogList';
 import { Loading } from 'element-ui';
 
 export default {
@@ -40,7 +48,7 @@ export default {
             picUserInfo: null
         }
     },
-    components: {BasicInfo, AchievementList},
+    components: {BasicInfo, AchievementList,ContractLogList},
     watch: {
         '$route' (to, from) {
             if(this.$route.params && this.$route.params.dealerId) {
@@ -87,6 +95,8 @@ export default {
                     this.fileList = responseData.dfFileAttachList;
                     this.picUserInfo = responseData.userInfoOfPIC;
 
+                    this.$store.commit('initAttList',responseData.dfFileAttachList);
+
                 } else if(response.data && response.data.LoadDealerFileDetailResult) {
                     this.$message.error(response.data.LoadDealerFileDetailResult.Message);
                 } else {
@@ -130,6 +140,46 @@ export default {
             this.picUserInfo = this.$refs.refBasicInfo.PersonInCharge;
 
             this.saveBasicInfoToServer(requestData);
+        },
+        loadAchievementListFromServer: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadAchievementList/" + this.dealerId;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                if(response.data && response.data.LoadAchievementListResult 
+                    && response.data.LoadAchievementListResult.Status == "success") {
+                        this.achList = response.data.LoadAchievementListResult.Data;
+                    } else if(response.data && response.data.LoadAchievementListResult) {
+                        this.$message.error(response.data.LoadAchievementListResult.Message)
+                    } else {
+                        this.$message.error("load achievement history list failed!");
+                    }
+            }).catch((error) => {
+                this.HideLoadingView();
+                this.$message.error(error.message);
+            });
+        },
+        loadContractLogListFromServer: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadContractList/" + this.dealerId;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                if(response.data && response.data.LoadContractListResult 
+                    && response.data.LoadContractListResult.Status == "success") {
+                        this.contractList = response.data.LoadContractListResult.Data;
+                    } else if(response.data && response.data.LoadContractListResult) {
+                        this.$message.error(response.data.LoadContractListResult.Message)
+                    } else {
+                        this.$message.error("load achievement history list failed!");
+                    }
+            }).catch((error) => {
+                this.HideLoadingView();
+                this.$message.error(error.message);
+            });
         }
     }
 }

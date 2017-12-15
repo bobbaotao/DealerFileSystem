@@ -37,15 +37,75 @@ module.exports = {
         curYear = moment().year() % 100;
         yearArr = new array();
 
-        for (var i = curYear + 5; i < curYear - 5; i--) {
+        for (var i = curYear + 1; i > curYear - 9; i--) {
             var itemText = "FY" + (i - 1) + "/" + i;
-            year.push({
+            yearArr.push({
                 label: itemText,
                 value: itemText
             });
         }
 
         return yearArr.toArray();
+    },
+    loadContractTypeList: function() {
+        return [{
+            label: "经销商协议 Dealer Agreement",
+            value: "DealerAgreement"
+        }, {
+            label: "经销商考察期协议 Dealer Probation Agreement",
+            value: "DealerProbationAgreement"
+        }];
+    },
+    loadSTUnitList: function() {
+        return [{
+            label: "元",
+            value: "RMB"
+        }, {
+            label: "台",
+            value: "TAI"
+        }, {
+            label: "个",
+            value: "GE"
+        }]; //meicuo, wo jiushi wenmang!
+    },
+    loadDealerRegionList: function() {
+        return [{
+            label: "Dental",
+            value: "Dental"
+        }, {
+            label: "MCS East",
+            value: "MCS_East"
+        }, {
+            label: "MCS Middle",
+            value: "MCS_Middle"
+        }, {
+            label: "MCS NorthCentral",
+            value: "MCS_NorthCentral"
+        }, {
+            label: "MCS Northeast",
+            value: "MCS_Northeast"
+        }, {
+            label: "MCS South",
+            value: "MCS_South"
+        }, {
+            label: "MCS Southwest",
+            value: "MCS_Southwest"
+        }, {
+            label: "OPH East",
+            value: "OPH_East"
+        }, {
+            label: "OPH North",
+            value: "OPH_North"
+        }, {
+            label: "OPH Southwest",
+            value: "OPH_Southwest"
+        }, {
+            label: "National",
+            value: "National"
+        }, {
+            label: "Service",
+            value: "Service"
+        }];
     },
     buildServerData_BasicInfo: function(data) {
         var fsDate = this.formatDateToServerObj(data.First_SignDate);

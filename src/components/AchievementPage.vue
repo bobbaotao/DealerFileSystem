@@ -2,8 +2,8 @@
     <div>
         <el-row class="smallRow">
             <el-col>
-                <el-button v-on:click="IsEdit = true">Edit</el-button>
-                <el-button v-on:click="saveValueToServer">Save</el-button>
+                <el-button :disabled="IsEdit" v-on:click="IsEdit = true">Edit</el-button>
+                <el-button :disabled="!IsEdit" v-on:click="saveValueToServer">Save</el-button>
                 <el-button v-on:click="returnToLastNav">Return</el-button>
             </el-col>
         </el-row>
@@ -11,8 +11,8 @@
             <el-col>
                 <el-row class="smallRow">
                     <el-col :span="2" class="smallCell">
-                        <el-select size="mini" v-model="selectedYear">
-                            <el-option v-for="item in loadYearList()" :key="item.value" 
+                        <el-select size="mini" :disabled="Status != 'NEW'" v-model="selectedYear">
+                            <el-option v-for="item in yearList" :key="item.value" 
                                 :label="item.label" :value="item.value"></el-option>
                         </el-select>
                     </el-col>
@@ -308,14 +308,15 @@
                 Dealer Assessment Form<br />
                 经销商评估表
             </el-col>
-            <el-col :span="16">
+            <el-col :span="8">
                 <el-upload
-                    class="upload-demo" :disabled="!this.IsEdit || this.bluploadDisable"
+                    class="upload-demo" :disabled="!this.IsEdit || this.UploadDisable" :file-list="dfFileList"
                     :action="this.fileBaseUrl + '?method=uploadDFAttachment&dealerID=' + this.dealerID"
-                    :show-file-list="false" :on-progress="blFileProcess" :on-error="blFileUploadFailed"
-                    :file-list="blfileList" :on-success="blFileUploadSuccess">
+                    :show-file-list="true" :on-progress="FileProcess" :on-error="FileUploadFailed"
+                    :on-success="FileUploadSuccess" :on-remove="DeletedfFile"
+                    :on-preview="FileDownLoad">
                     <el-button size="small" type="primary"  icon="upload"
-                    :disabled="!this.isInEdit || this.bluploadDisable">点击上传</el-button>
+                    :disabled="!this.IsEdit || this.UploadDisable">点击上传</el-button>
                 </el-upload>
             </el-col>
         </el-row>
@@ -324,7 +325,7 @@
                  其他备注
             </el-col>
             <el-col :span="14">
-                <el-input v-if="IsEdit" size="mini" :rows="3" :type="textarea" v-model="Remark">
+                <el-input v-if="IsEdit" :rows="3" type="textarea" v-model="Remark">
 
                 </el-input>
                 <span v-else>
@@ -338,14 +339,14 @@
 <script>
 import Utility from '../utility/index';
 import { Loading } from 'element-ui';
+var array = require('array');
 
 export default {
     name: 'AchievementPage',
     data() {
+        var yearArr = Utility.loadYearSelectList();
         return {
-            yearList: [{label:"FY16/17",value:"FY16/17"},
-                        {label:"FY15/16",value:"FY15/16"},
-                        {label:"FY14/15",value:"FY14/15"}],
+            yearList: yearArr,
             selectedYear: null,
             Q1_TargetNum: null,
             Q1_SalesNum: null,
@@ -380,10 +381,12 @@ export default {
             IsEdit: false,
             id: null,
             IsDeleted: false,
-            fileBaseUrl: Utility.fileServiceUrl
+            UploadDisable: false,
+            fileBaseUrl: Utility.fileServiceUrl,
+            dfFileList: []
         }
     },
-    props: ['Status','initData','dealerID'],
+    props: ['Status','initData','dealerID','refreshKey'],
     computed: {
             Q1_FinishRate: function() {
                 if(this.Q1_TargetNum && this.Q1_TargetNum > 0) {
@@ -607,9 +610,15 @@ export default {
                 return 0;
             }
     },
+    created: function() {
+        this.setValues(this.initData);
+    },
     watch: {
         initData: function(newValue) {
-            this.setValues();
+            this.setValues(newValue);
+        },
+        refreshKey: function(newValue) {
+            this.setValues(this.initData);
         }
     },
     methods: {
@@ -619,9 +628,6 @@ export default {
         HideLoadingView: function() {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
-        },
-        loadYearList: function(){
-            return Utility.loadYearSelectList();
         },
         setValues: function(data) {
             if(data)
@@ -663,12 +669,13 @@ export default {
                 this.Q4_DiscountContract = data.Q4_DiscountContract;
                 this.Q4_OINO = data.Q4_OINO;
                 this.Q4_UsedMoney = data.Q4_UsedMoney;
+                this.initFileList(data.FileID_DAF);
             } else {
                 this.id = null;
                 this.selectedYear = null;
                 this.Remark = null;
                 this.DAFFileID = null;
-                this.IsDeleted = null;
+                this.IsDeleted = false;
 
                 this.Q1_TargetNum = null;
                 this.Q1_SalesNum = null;
@@ -701,10 +708,80 @@ export default {
                 this.Q4_DiscountContract = null;
                 this.Q4_OINO = null;
                 this.Q4_UsedMoney = null;
+                this.dfFileList = [];
+            }
+        },
+        initFileList: function(fileIds) {
+            var fileArr = array();
+            if(fileIds != null && fileIds != "") {
+                var ids = fileIds.split(';');
+                for(var id in ids) {
+                    var fileId = ids[id];
+                    if(fileId != null && fileId != "")
+                    {
+                        var fileItem = this.$store.getters.loadAttInfoByID(fileId);
+                        if(fileItem != null)
+                        {
+                            fileArr.push({
+                                name: fileItem.Doc_Name,
+                                url: this.fileBaseUrl + '?method=loadDFAttachment&fileID=' + fileId,
+                                status: 'finished',
+                                id: fileId
+                            });
+                        }
+                    }
+                }
+                this.dfFileList = fileArr.toArray();
+            } else {
+                this.dfFileList = [];
+            }
+        },
+        FileProcess: function() {
+            this.ShowLoadingView();
+        },
+        FileUploadFailed: function(err, file, fileList) {
+            this.HideLoadingView();
+            this.$message.error(err.message);
+        },
+        FileUploadSuccess: function(response, file, fileList) {
+            this.HideLoadingView();
+            this.DAFFileID =this.DAFFileID + response + ";";
+            file.id = response;
+            file.url = this.fileBaseUrl + '?method=loadDFAttachment&fileID=' + response,
+            this.$message("Upload Success!");
+
+            this.$store.commit('addAtt',{
+                id: response,
+                dealer_id: this.dealerID,
+                Doc_Name: file.name
+            })
+        },
+        FileDownLoad: function(file) {
+            var url = file.url;
+            window.open(url);
+        },
+        DeletedfFile: function(file, fileList) {
+            //var i = file;
+            //todo
+            if(file && file.id)
+            {
+               var idArr = this.DAFFileID.split(";");
+               var iResult = "";
+               for(var id in idArr) {
+                    var fileId = idArr[id];
+
+                    if(fileId !=  file.id && fileId != "") {
+                        iResult += fileId + ";";
+                    }
+               }
+               this.DAFFileID = iResult;
+            } else {
+                this.$message.error("file id is null!");
             }
         },
         returnToLastNav: function() {
-            this.$router.go(-1);
+            this.$emit("close");
+            //this.$router.go(-1);
         },
         saveValueToServer: function() {
             var achData = this.buildServerData_AchievementHistory();
@@ -725,7 +802,10 @@ export default {
 
                 if(response.data && response.data.SaveAchievementResult 
                 && response.data.SaveAchievementResult.Status == "success") {
+                    this.Status = "UPDATE";
+                    this.IsEdit =  false;
                     this.$message("Save success!");
+                    this.$emit('refresh');
                 } else if(response.data && response.data.SaveAchievementResult) {
                     this.$message.error(response.data.SaveAchievementResult.Message);
                 } else {
@@ -733,9 +813,13 @@ export default {
                 }
             }).catch((error) => {
                 this.HideLoadingView();
-                this.$message.error(error.data.message);
+                this.$message.error(error.message);
             });
 
+        },
+        loadAttachmentlistFromServer: function() {
+            //Load data   //TODO
+            //then show file link
         },
         buildServerData_AchievementHistory: function() {
             var result = {
@@ -806,11 +890,9 @@ export default {
 .smallRow 
 {
     padding: 5px 0px 5px 0px;
-
 }
 .smallCell{
     padding: 3px 5px 3px 5px;
-
 }
 
 </style>

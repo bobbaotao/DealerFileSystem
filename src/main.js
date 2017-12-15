@@ -3,12 +3,13 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import Element from 'element-ui';
+import Element from 'element-ui'
 //import 'element-ui/lib/theme-default/index.css';
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/en';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
+import locale from 'element-ui/lib/locale/lang/en'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+import store from './store'
 
 require('es6-promise').polyfill();
 
@@ -20,6 +21,7 @@ Vue.use(VueAxios, axios);
 new Vue({
     el: '#app',
     router,
+    store,
     template: '<App/>',
     components: { App }
 })

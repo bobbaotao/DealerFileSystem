@@ -2,6 +2,8 @@
 
 > A Vue.js project
 
+经销商归档系统前端
+
 ## Build Setup
 
 ``` bash
