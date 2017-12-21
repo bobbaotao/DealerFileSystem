@@ -106,7 +106,8 @@
                         销售目标
                     </el-col>
                     <el-col :span="6">
-                        <el-input v-model="salesTarget"  :disabled="!isEdit" size="mini"></el-input>
+                        <el-input-number v-model="salesTarget" :step="10000"
+                            :disabled="!isEdit" :min="0" size="mini"></el-input-number>
                     </el-col>
                 </el-row>
                 <el-row class="middleRow">
@@ -115,7 +116,7 @@
                         指定商品
                     </el-col>
                     <el-col :span="18">
-                        <el-input v-model="Appointed_Products"  type="textarea" :rows="2"
+                        <el-input v-model="Appointed_Products"  type="textarea" :autosize="{ minRows: 2, maxRows: 9}"
                              :disabled="!isEdit" size="mini"></el-input>
                     </el-col>
                 </el-row>
@@ -125,7 +126,7 @@
                         代理区域
                     </el-col>
                     <el-col :span="18">
-                        <el-input v-model="Distribution_Area" type="textarea" :rows="2"
+                        <el-input v-model="Distribution_Area" type="textarea" :autosize="{ minRows: 2, maxRows: 9}"
                             :disabled="!isEdit" size="mini"></el-input>
                     </el-col>
                 </el-row>
@@ -144,7 +145,7 @@
                         签约次数
                     </el-col>
                     <el-col :span="6">
-                        <el-input-number v-model="Sign_Times" :disabled="!isEdit" :min="0" size="mini"></el-input-number>
+                        <el-input-number v-model="signCount" :disabled="true" :min="0" size="mini"></el-input-number>
                     </el-col>
                 </el-row>
                 <el-row class="middleRow">
@@ -153,7 +154,8 @@
                         备注说明
                     </el-col>
                     <el-col :span="18">
-                        <el-input v-model="Remark" :disabled="!isEdit" type="textarea" :rows="2" size="mini"></el-input>
+                        <el-input v-model="Remark" :disabled="!isEdit" type="textarea" 
+                        :autosize="{ minRows: 2, maxRows: 9}" size="mini"></el-input>
                     </el-col>
                 </el-row>
             </el-col>
@@ -212,6 +214,11 @@ export default {
           this.setPICData(newValue);
       }  
     },
+    computed: {
+      signCount: function() {
+          return this.$store.state.signCount;
+      }  
+    },
     methods: {
         setData: function(basicInfoData) {
             this.Appointed_Products = basicInfoData.Appointed_Products;
@@ -245,6 +252,7 @@ export default {
                 UserName:this.$refs.picPicker.username,
                 Email:this.$refs.picPicker.email
             };
+            this.Sign_Times = this.$store.state.signCount;
             var result = Utility.buildServerData_BasicInfo(this._data);
             return result;
         }

@@ -3,14 +3,14 @@
         <el-row class="SectionTitle" >
             <el-col>
                 <span v-on:click="isHide = !isHide" style="padding-left:20px">
-                    Achievement / 销售目标及完成情况
+                    <i class="el-icon-plus" v-if="isHide"></i><i class="el-icon-minus" v-else></i> Achievement / 销售目标及完成情况
                 </span>
             </el-col>
         </el-row>
         <el-row v-if="!isHide" class="smallRow">
-            <el-col :span="12" style="text-align: left">
-                <el-button size="small" type="primary" v-on:click="handerCreateNew">Create New</el-button>
-                <el-button size="small" type="primary" v-on:click="handerRefersh">Refreash</el-button>
+            <el-col :span="12" style="text-align: left; padding-left:10px;">
+                <el-button size="small" type="primary" v-on:click="handlerCreateNew">Create New</el-button>
+                
             </el-col>
         </el-row>
         <el-row  v-if="!isHide" class="smallRow">
@@ -30,8 +30,8 @@
             <el-col  v-if="!isHide" class="sectionRow" >
                 <el-row>
                     <el-col :span="3">
-                        <el-button size="mini" type="primary" v-on:click="handerEdit(item)">Edit</el-button>
-                        <el-button size="mini" type="primary" v-on:click="handerDelete(item)">Delete</el-button>
+                        <el-button size="mini" type="primary" v-on:click="handlerEdit(item)">Edit</el-button>
+                        <el-button size="mini" type="primary" v-on:click="handlerDelete(item)">Delete</el-button>
                     </el-col>
                     <el-col :span="2">&nbsp;{{item.Year}}</el-col>
                     <el-col :span="1">Q1</el-col>
@@ -93,7 +93,7 @@
         </el-row>
         <el-dialog title="Achievement History" :visible.sync="dialogAchItemVisable" :fullscreen="true">
             <AchievementPage :refreshKey="refreshKey" :dealerID="dealerID" :Status="achViewStatus"
-                    :initData="achViewInitData" v-on:close="handerDialogClose" v-on:refresh="handerRefersh">
+                    :initData="achViewInitData" v-on:close="handlerDialogClose" v-on:refresh="handlerRefersh">
             </AchievementPage>
         </el-dialog>
     </div>
@@ -112,7 +112,7 @@ export default {
             dialogAchItemVisable: false,
             achViewInitData: null,
             achViewStatus: "New",
-            isHide: false
+            isHide: true
         }
     },
     props: ['achListData','isAllowEdit', 'dealerID'],
@@ -125,13 +125,13 @@ export default {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
         },
-        handerEdit: function(item) {
+        handlerEdit: function(item) {
             this.achViewInitData = item;
             this.refreshKey = this.refreshKey + 1;
             this.achViewStatus = "Update";
             this.dialogAchItemVisable = true;
         },
-        handerDelete: function(item) {
+        handlerDelete: function(item) {
             var requestData = {
                 data: item
             };
@@ -156,16 +156,16 @@ export default {
                 this.$message.error(error.nessage);
             });
         },
-        handerCreateNew: function() {
+        handlerCreateNew: function() {
             this.achViewInitData = null;
             this.refreshKey = this.refreshKey + 1;
             this.achViewStatus = "NEW";
             this.dialogAchItemVisable = true;
         },
-        handerDialogClose: function() {
+        handlerDialogClose: function() {
             this.dialogAchItemVisable = false;
         },
-        handerRefersh: function() {
+        handlerRefersh: function() {
             this.$emit('reloadAchList');
         }
     }

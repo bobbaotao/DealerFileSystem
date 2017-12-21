@@ -5,7 +5,8 @@ var array = require('array');
 Vue.use(Vuex)
 
 const state = {
-    attachmentList: null
+    attachmentList: null,
+    signCount: 0
 }
 
 const mutations = {
@@ -18,6 +19,9 @@ const mutations = {
             });
             state.attachmentList = attArr;
         }
+    },
+    setSignCount(state, newCount) {
+        state.signCount = newCount;
     },
     addAtt(state, newAtt) {
         if (newAtt) {

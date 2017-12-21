@@ -17,19 +17,20 @@ module.exports = {
             var i = dateObj.indexOf('+');
             var dateNum = new Number(dateObj.substring(6, i));
             var mData;
-            if (i == 16) {
-                mData = moment.unix(dateNum)
-            } else {
-                mData = moment(dateNum);
-            }
+            //if (i == 16) {
+            //    mData = moment.unix(dateNum)
+            //} else {
+            mData = moment(dateNum);
+            //}
             return mData.format(this.defaultDateFormat);
         }
         return "";
     },
     formatDateToServerObj: function(data) {
         var fsDate = null;
-        if (moment.isDate(data)) {
-            fsDate = "/Date(" + moment(data).unix() + ")/";
+        var mDate = moment(data);
+        if (mDate.isValid()) {
+            fsDate = "/Date(" + mDate.valueOf() + ")/";
         }
         return fsDate;
     },
@@ -67,6 +68,18 @@ module.exports = {
             label: "个",
             value: "GE"
         }]; //meicuo, wo jiushi wenmang!
+    },
+    formatToUnitText: function(value) {
+        switch (value) {
+            case "RMB":
+                return "元";
+            case "TAI":
+                return "台";
+            case "GE":
+                return "个";
+            default:
+                return value;
+        }
     },
     loadDealerRegionList: function() {
         return [{

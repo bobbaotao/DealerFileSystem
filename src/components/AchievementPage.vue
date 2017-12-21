@@ -11,7 +11,7 @@
             <el-col>
                 <el-row class="smallRow">
                     <el-col :span="2" class="smallCell">
-                        <el-select size="mini" :disabled="Status != 'NEW'" v-model="selectedYear">
+                        <el-select size="mini" :disabled="formStatus != 'NEW'" v-model="selectedYear">
                             <el-option v-for="item in yearList" :key="item.value" 
                                 :label="item.label" :value="item.value"></el-option>
                         </el-select>
@@ -325,7 +325,7 @@
                  其他备注
             </el-col>
             <el-col :span="14">
-                <el-input v-if="IsEdit" :rows="3" type="textarea" v-model="Remark">
+                <el-input v-if="IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Remark">
 
                 </el-input>
                 <span v-else>
@@ -383,7 +383,8 @@ export default {
             IsDeleted: false,
             UploadDisable: false,
             fileBaseUrl: Utility.fileServiceUrl,
-            dfFileList: []
+            dfFileList: [],
+            formStatus: "NEW"
         }
     },
     props: ['Status','initData','dealerID','refreshKey'],
@@ -619,6 +620,9 @@ export default {
         },
         refreshKey: function(newValue) {
             this.setValues(this.initData);
+        },
+        Status: function(newValue) {
+            this.formStatus = newValue;
         }
     },
     methods: {
@@ -786,7 +790,7 @@ export default {
         saveValueToServer: function() {
             var achData = this.buildServerData_AchievementHistory();
             var requestUrl = Utility.dfServiceUrl + "/SaveAchievement/";
-            if(this.Status == "NEW") {
+            if(this.formStatus == "NEW") {
                 requestUrl += "NEW";
             } else {
                 requestUrl += "UPDATE";
@@ -802,7 +806,7 @@ export default {
 
                 if(response.data && response.data.SaveAchievementResult 
                 && response.data.SaveAchievementResult.Status == "success") {
-                    this.Status = "UPDATE";
+                    this.formStatus = "UPDATE";
                     this.IsEdit =  false;
                     this.$message("Save success!");
                     this.$emit('refresh');

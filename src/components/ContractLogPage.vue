@@ -67,7 +67,7 @@
                         Appointed Products<br />指定产品
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="Appointed_Products"></el-input>
+                        <el-input  :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Appointed_Products"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -75,7 +75,7 @@
                         Distribution Area<br />代理区域
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="Distribution_Area"></el-input>
+                        <el-input  :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Distribution_Area"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -83,7 +83,7 @@
                         Exceptions<br />除外医院
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="Exceptions_Hosptial"></el-input>
+                        <el-input  :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Exceptions_Hosptial"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -91,7 +91,7 @@
                         After-sales Service Agreement<br />售后服务协议
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="AfterSales_SvcAgreement"></el-input>
+                        <el-input :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="AfterSales_SvcAgreement"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -99,7 +99,7 @@
                         Glory Record<br />荣誉记录
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="Glory_Record"></el-input>
+                        <el-input :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Glory_Record"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -139,7 +139,8 @@
                         Remark<br />其他备注
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input v-if="IsEdit" :rows="2" type="textarea" v-model="Remark"></el-input>
+                        <el-input :disabled="!IsEdit" type="textarea" 
+                        :autosize="{ minRows: 2, maxRows: 9}" v-model="Remark"></el-input>
                     </el-col>
                 </el-row>
             </el-col>
@@ -183,6 +184,7 @@ export default {
             salesTargetUnitList: salesTargetArr,
             dealerRegionList: dealerRegionArr,
             IsEdit: false,
+            formStatus: "NEW",
             fileBaseUrl: Utility.fileServiceUrl,
             
             ContractDocUploadDisable: false,
@@ -202,6 +204,9 @@ export default {
         },
         refreshKey: function(newValue) {
             this.setInitValue(this.initData);
+        },
+        Status: function(newValue) {
+            this.formStatus =  newValue;
         }
     },
     methods: {
@@ -292,7 +297,7 @@ export default {
         },
         saveValueToServer: function() {
             var requestUrl = Utility.dfServiceUrl + "/SaveContract/";
-            if(this.Status == "NEW") {
+            if(this.formStatus == "NEW") {
                 requestUrl += "NEW";
             } else {
                 requestUrl += "UPDATE";
@@ -311,7 +316,7 @@ export default {
                     this.id = response.data.SaveContractResult.Data;
                     this.$emit("refresh");
                     this.IsEdit = false;
-                    this.Status = "UPDATE";
+                    this.formStatus = "UPDATE";
                     this.$message("Save Success!");
                 } else if (response.data && response.data.SaveContractResult) {
                     this.$message.error(response.data.SaveContractResult.Message);
@@ -354,8 +359,8 @@ export default {
             if(data) {
                 this.id = data.id;
                 this.Year = data.Year;
-                this.ActPeriod_StartDate = data.ActPeriod_StartDate;
-                this.ActPeriod_EndDate = data.ActPeriod_EndDate;
+                this.ActPeriod_StartDate = Utility.formatDateToString(data.ActPeriod_StartDate);
+                this.ActPeriod_EndDate = Utility.formatDateToString(data.ActPeriod_EndDate);
                 this.ContractType = data.ContractType;
                 this.Dealer_Region = data.Dealer_Region;
                 this.SalesTarget = data.SalesTarget;
