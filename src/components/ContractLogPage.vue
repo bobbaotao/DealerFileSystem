@@ -54,7 +54,7 @@
                     </el-col>
                     <el-col class="colValue" :span="8">
                         <el-input-number size="mini" v-model="SalesTarget" controls-position="right"
-                                        :min="0" :max="9999999999" :step="10000" v-if="IsEdit">
+                                        :min="0" :max="9999999999" :step="10000" :disabled="!IsEdit">
                         </el-input-number>
                         <el-select size="mini"  class="miniSelector" :disabled="!IsEdit" v-model="SalesTarget_Unit">
                             <el-option v-for="item in salesTargetUnitList" :key="item.value" 
@@ -91,7 +91,20 @@
                         After-sales Service Agreement<br />售后服务协议
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="AfterSales_SvcAgreement"></el-input>
+                        <!-- <el-input :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="AfterSales_SvcAgreement"></el-input> -->
+                        <el-switch :disabled="!IsEdit" v-model="IsHave_AfterSalesAgr"
+                            active-text="有" inactive-text="无">
+                        </el-switch>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col class="colTitle" :span="4">
+                        Application Service Agreement<br />应用服务协议
+                    </el-col>
+                    <el-col class="colValue" :span="18"> 
+                        <el-switch :disabled="!IsEdit" v-model="IsHave_AppSvcAgr"
+                            active-text="有" inactive-text="无">
+                        </el-switch>
                     </el-col>
                 </el-row>
                 <el-row class="tinyRow">
@@ -173,6 +186,8 @@ export default {
             Distribution_Area: null,
             Exceptions_Hosptial: null,
             AfterSales_SvcAgreement: null,
+            IsHave_AfterSalesAgr: false,
+            IsHave_AppSvcAgr: false,
             Glory_Record: null,
             FileID_DealerAgreement: null,
             FileID_DealerCA: null,
@@ -254,6 +269,7 @@ export default {
                         iResult += fileId + ";";
                     }
                }
+               this.removeFileFromServer(file.id);
                this.FileID_DealerAgreement = iResult;
             } else {
                 this.$message.error("file id is null!");
@@ -290,17 +306,31 @@ export default {
                         iResult += fileId + ";";
                     }
                }
+               this.removeFileFromServer(file.id);
                this.FileID_DealerCA = iResult;
             } else {
                 this.$message.error("file id is null!");
             }
         },
+        removeFileFromServer: function(id) {
+            var requestUrl = Utility.dfServiceUrl + "/DeleteAttachment/" + this.dealerID + "/"  + id;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                this.$message("Delete success!");
+            }).catch((error) => {
+                this.HideLoadingView();
+                //this.$message.error(error.data.message);
+            });
+        },  
         saveValueToServer: function() {
             var requestUrl = Utility.dfServiceUrl + "/SaveContract/";
-            if(this.formStatus == "NEW") {
-                requestUrl += "NEW";
-            } else {
+            if(this.id && this.id != -1) {
                 requestUrl += "UPDATE";
+            } else {
+                requestUrl += "NEW";
             }
 
             var requestData = {
@@ -347,7 +377,9 @@ export default {
                 FileID_DealerAgreement: this.FileID_DealerAgreement,
                 FileID_DealerCA: this.FileID_DealerCA,
                 Remark: this.Remark,
-                IsDeleted: this.IsDeleted
+                IsDeleted: this.IsDeleted,
+                IsHave_AppSvcAgr: this.IsHave_AppSvcAgr,
+                IsHave_AfterSalesAgr: this.IsHave_AfterSalesAgr
             };
             return result;
         },
@@ -374,10 +406,12 @@ export default {
                 this.FileID_DealerCA = data.FileID_DealerCA;
                 this.Remark = data.Remark;
                 this.IsDeleted = data.IsDeleted;
+                this.IsHave_AfterSalesAgr = data.IsHave_AfterSalesAgr;
+                this.IsHave_AppSvcAgr = data.IsHave_AppSvcAgr;
                 this.ContractDocFileList = this.loadFileList(data.FileID_DealerAgreement);
                 this.CertFileList = this.loadFileList(data.FileID_DealerCA);
             } else {
-                this.id = 0;
+                this.id = -1;
                 this.Year = null;
                 this.ActPeriod_StartDate = null;
                 this.ActPeriod_EndDate = null;
@@ -394,6 +428,8 @@ export default {
                 this.FileID_DealerCA = null;
                 this.Remark = null;
                 this.IsDeleted = false;
+                this.IsHave_AfterSalesAgr = false,
+                this.IsHave_AppSvcAgr = false,
                 this.ContractDocFileList = [];
                 this.CertFileList = [];
             }

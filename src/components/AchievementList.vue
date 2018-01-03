@@ -9,8 +9,7 @@
         </el-row>
         <el-row v-if="!isHide" class="smallRow">
             <el-col :span="12" style="text-align: left; padding-left:10px;">
-                <el-button size="small" type="primary" v-on:click="handlerCreateNew">Create New</el-button>
-                
+                <el-button size="small" type="primary" :disabled="!isAllowEdit" v-on:click="handlerCreateNew">Create New</el-button>
             </el-col>
         </el-row>
         <el-row  v-if="!isHide" class="smallRow">
@@ -30,10 +29,11 @@
             <el-col  v-if="!isHide" class="sectionRow" >
                 <el-row>
                     <el-col :span="3">
-                        <el-button size="mini" type="primary" v-on:click="handlerEdit(item)">Edit</el-button>
-                        <el-button size="mini" type="primary" v-on:click="handlerDelete(item)">Delete</el-button>
+                        <el-button size="mini" type="primary"  v-if="isAllowEdit" v-on:click="handlerEdit(item)">Edit</el-button>
+                        <el-button size="mini" type="primary"  v-else v-on:click="handlerEdit(item)">View</el-button>
+                        <el-button size="mini" type="primary"  :disabled="!isAllowEdit" v-on:click="handlerDelete(item)">Delete</el-button>
                     </el-col>
-                    <el-col :span="2">&nbsp;{{item.Year}}</el-col>
+                    <el-col :span="2">&nbsp;{{getFYText(item.Year)}}</el-col>
                     <el-col :span="1">Q1</el-col>
                     <el-col :span="3">&nbsp;{{item.Q1_TargetNum}}</el-col>
                     <el-col :span="3">&nbsp;{{item.Q1_SalesNum}}</el-col>
@@ -124,6 +124,9 @@ export default {
         HideLoadingView: function() {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
+        },
+        getFYText: function(year) {
+            return Utility.getFYText(year);
         },
         handlerEdit: function(item) {
             this.achViewInitData = item;

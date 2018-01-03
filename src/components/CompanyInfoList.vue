@@ -10,8 +10,10 @@
         </el-row>
         <el-row v-if="!isHide" class="smallRow">
             <el-col :span="12" style="text-align: left; padding-left:10px;">
-                <el-button size="small" type="primary" v-on:click="handlerCreateNew">Create New</el-button>
-                <el-button size="small" type="primary" v-on:click="handlerGenerateNew">Generate New from Current Dealer Info</el-button>
+                <el-button size="small" type="primary"  :disabled="!isAllowEdit" 
+                    v-on:click="handlerCreateNew">Create New</el-button>
+                <el-button size="small" type="primary"  :disabled="!isAllowEdit" 
+                    v-on:click="handlerGenerateNew">Generate New from Current Dealer Info</el-button>
                 
             </el-col>
         </el-row>
@@ -19,12 +21,18 @@
             <el-table :data="CompanyInfoDatas" stripe style="width: 100%">
                     <el-table-column width="200">
                         <template slot-scope="scope">
-                            <el-button type="primary" size="mini" v-on:click="handlerEdit(scope.row)" :disabled="!isAllowEdit">Edit</el-button>
-                            <el-button type="primary" size="mini" v-on:click="handlerDelete(scope.row)" :disabled="!isAllowEdit">Delete</el-button>
+                            <el-button type="primary" size="mini" v-on:click="handlerEdit(scope.row)" 
+                                v-if="isAllowEdit">Edit</el-button>
+                            <el-button type="primary" size="mini" v-on:click="handlerEdit(scope.row)" 
+                                v-else>View</el-button>
+                            <el-button type="primary" size="mini" v-on:click="handlerDelete(scope.row)" 
+                                :disabled="!isAllowEdit">Delete</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column prop="Year" label="Year" width="120">
-
+                        <template slot-scope="scope">
+                            {{getFYText(scope.row.Year)}}
+                        </template>
                     </el-table-column>
                      <el-table-column prop="Modified" label="Last Modified" width="140">
                          <template slot-scope="scope">
@@ -70,6 +78,9 @@ export default {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
         },
+        getFYText: function(year) {
+            return Utility.getFYText(year);
+        },
         formatDate: function(data) {
             return Utility.formatDateToString(data);
         },
@@ -92,6 +103,29 @@ export default {
             this.refrshKey = this.refrshKey + 1;
             this.diaConpanyInfoVisible = true;
         },
+        LoadAttListAndOpenCompanyPage: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadAttList/" + this.dealerID;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                if(response.data && response.data.LoadAttListResult 
+                && response.data.LoadAttListResult.Status == "success") {
+                    this.$store.commit('initAttList',response.data.LoadAttListResult.Data);
+                    this.diaStatus = "Generate";
+                    this.refrshKey = this.refrshKey + 1;
+                    this.diaConpanyInfoVisible = true;
+                } else if(response.data && response.data.LoadAttListResult) {
+                    this.$message.error(response.data.LoadAttListResult.Message);
+                } else {
+                    this.$message.error("Load company list failed!");
+                }
+            }).catch((error) => {
+                this.HideLoadingView();
+                this.$message.error(error.data.message);
+            });
+        },
         handlerGenerateNew: function() {
             var requestUrl = Utility.dfServiceUrl + "/GenerateCompanyInfo/" + this.dealerID;
             this.ShowLoadingView();
@@ -103,11 +137,7 @@ export default {
                     && response.data.GenerateCompanyInfoResult.Status == "success")
                 {
                     this.diaInitData = response.data.GenerateCompanyInfoResult.Data;
-                    this.diaStatus = "UPDATE";
-                    this.refrshKey = this.refrshKey + 1;
-                    this.diaConpanyInfoVisible = true;
-
-                    this.$emit("ReloadAttList");
+                    this.LoadAttListAndOpenCompanyPage();
                 } else if (response.data && response.data.GenerateCompanyInfoResult) {
                     this.$message.error(response.data.GenerateCompanyInfoResult.Message);
                 } else {

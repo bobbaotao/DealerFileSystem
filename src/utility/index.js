@@ -35,18 +35,35 @@ module.exports = {
         return fsDate;
     },
     loadYearSelectList: function() {
-        curYear = moment().year() % 100;
         yearArr = new array();
 
-        for (var i = curYear + 1; i > curYear - 9; i--) {
-            var itemText = "FY" + (i - 1) + "/" + i;
+        for (var i = 2; i > -9; i--) {
+            curYearNum1 = (moment().year() + i) % 100;
+            curYearNum2 = (moment().year() + i + 1) % 100;
+            curYearNum1 = curYearNum1 > 9 ? curYearNum1.toString() : "0" + curYearNum1;
+            curYearNum2 = curYearNum2 > 9 ? curYearNum2.toString() : "0" + curYearNum2;
+            var itemText = "FY" + curYearNum1 + "/" + curYearNum2;
             yearArr.push({
                 label: itemText,
-                value: itemText
+                value: (moment().year() + i).toString()
             });
         }
 
         return yearArr.toArray();
+    },
+    getFYText: function(data) {
+        var i = new Number(data);
+        curYearNum1 = i % 100;
+        curYearNum2 = (i + 1) % 100;
+        curYearNum1 = curYearNum1 > 9 ? curYearNum1.toString() : "0" + curYearNum1;
+        curYearNum2 = curYearNum2 > 9 ? curYearNum2.toString() : "0" + curYearNum2;
+        var itemText = "FY" + curYearNum1 + "/" + curYearNum2;
+        //var itemText = "FY" + (i - 1) + "/" + i;
+        return itemText;
+    },
+    getPastedFYText: function(data, index) {
+        var i = new Number(data);
+        return this.getFYText(i - index);
     },
     loadContractTypeList: function() {
         return [{
@@ -56,6 +73,45 @@ module.exports = {
             label: "经销商考察期协议 Dealer Probation Agreement",
             value: "DealerProbationAgreement"
         }];
+    },
+    loadBUList: function() {
+        return [{
+            label: "MED",
+            value: "MED"
+        }, {
+            label: "IMT",
+            value: "IMT"
+        }, {
+            label: "MIK",
+            value: "MIK"
+        }, {
+            label: "Vision",
+            value: "Vision"
+        }];
+    },
+    loadRecommendedList: function() {
+        return [{
+            label: "Temp1",
+            value: "Temp1"
+        }, {
+            label: "Temp2",
+            value: "Temp2"
+        }, {
+            label: "Temp3",
+            value: "Temp3"
+        }];
+    },
+    loadDefaultRecommendText: function(status) {
+        switch (status) {
+            case "Temp1":
+                return "Temp1 Temp1 Temp1 Temp1";
+            case "Temp2":
+                return "Temp2 Temp2 Temp2 Temp2";
+            case "Temp3":
+                return "Temp3 Temp3 Temp3 Temp3";
+            default:
+                return "";
+        }
     },
     loadSTUnitList: function() {
         return [{

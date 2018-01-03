@@ -201,7 +201,7 @@ export default {
             FileID_CompanyInfo: null,
             CompanyInfoFileList: [],
 
-            FileID_BusinessLicens: null,
+            FileID_BusinessLicense: null,
             BusinessLicensFileList: [],
 
             FileID_TaxRC: null,
@@ -230,14 +230,18 @@ export default {
     props: ['initData', 'dealerID', 'RefreshKey', 'Status'],
     watch: {
         Status: function(newValue) {
-            this.formStatus = newValue;
-        },
-        initData: function(newValue) {
-            this.setInitValue(newValue);
+            if(newValue == "Generate") {
+                this.formStatus = "UPDATE";
+            } else {
+                this.formStatus = newValue;
+            }
         },
         RefreshKey: function(newValue){
             this.setInitValue(this.initData);
         }
+    },
+    created () {
+        this.setInitValue(this.initData);
     },
     methods: {
         ShowLoadingView: function() {
@@ -248,12 +252,15 @@ export default {
             curLoadingInstance.close();
         },
         setInitValue: function(data) {
+            if(this.Status == "NEW" || this.Status == "Generate") {
+                this.IsEdit = true;
+            }
             if(data) {
-                this.Id = data.Id;
-                this.dealer_id = data.dealerID;
+                this.Id = data.id;
+                this.dealer_id = data.dealer_id;
                 this.Year = data.Year;
                 this.FileID_CompanyInfo = data.FileID_CompanyInfo;
-                this.FileID_BusinessLicense = data.FileID_BusinessLicens;
+                this.FileID_BusinessLicense = data.FileID_BusinessLicense;
                 this.FileID_TaxRC = data.FileID_TaxRC;
                 this.FileID_OrgCodeCer = data.FileID_OrgCodeCer;
                 this.FileID_IDCardOfLegalRep = data.FileID_IDCardOfLegalRep;
@@ -265,7 +272,7 @@ export default {
                 this.IsDeleted = data.IsDeleted;
 
                 this.CompanyInfoFileList = this.loadFileList(data.FileID_CompanyInfo);
-                this.BusinessLicensFileList = this.loadFileList(data.FileID_BusinessLicens);
+                this.BusinessLicensFileList = this.loadFileList(data.FileID_BusinessLicense);
                 this.TaxRCFileList = this.loadFileList(data.FileID_TaxRC);
                 this.OrgCodeCerFileList = this.loadFileList(data.FileID_OrgCodeCer);
                 this.IDCardOfLegalRepFileList = this.loadFileList(data.FileID_IDCardOfLegalRep);
@@ -327,7 +334,7 @@ export default {
             this.fileUploadHandle(response, file, fileList);
         },
         BusinessLicensUploadSuccess: function(response, file, fileList) {
-            this.FileID_BusinessLicens = this.FileID_BusinessLicens + response + ";";
+            this.FileID_BusinessLicense = this.FileID_BusinessLicense + response + ";";
             this.fileUploadHandle(response, file, fileList);
         },
         TaxRCUploadSuccess: function(response, file, fileList) {
@@ -370,14 +377,28 @@ export default {
                         iResult += fileId + ";";
                     }
                }
+               this.removeFileFromServer(file.id);
                return iResult;
             } else {
                 this.$message.error("file id is null!");
                 return sourceIDs;
             }
         },
+        removeFileFromServer: function(id) {
+            var requestUrl = Utility.dfServiceUrl + "/DeleteAttachment/" + this.dealerID + "/"  + id;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                this.$message("Delete success!");
+            }).catch((error) => {
+                this.HideLoadingView();
+                //this.$message.error(error.data.message);
+            });
+        },  
         BusinessLicensDeletedfFile: function(file, fileList) {
-            this.FileID_BusinessLicens = fileDeleteHandle(file, fileList, this.FileID_BusinessLicens);
+            this.FileID_BusinessLicense = fileDeleteHandle(file, fileList, this.FileID_BusinessLicense);
         },
         TaxRCDeletedfFile: function(file, fileList) {
             this.FileID_TaxRC = fileDeleteHandle(file, fileList, this.FileID_TaxRC);
@@ -408,10 +429,10 @@ export default {
                 data: this.buildServerData()
             };
             var requestUrl = Utility.dfServiceUrl + "/SaveCompanyInfo/";
-            if(this.formStatus == "NEW") {
-                requestUrl += "NEW";
-            } else {
+            if(this.Id && this.Id != -1) {
                 requestUrl += "UPDATE";
+            } else {
+                requestUrl += "NEW";
             }
             this.ShowLoadingView();
 
@@ -442,7 +463,7 @@ export default {
                 dealer_id : this.dealerID,
                 Year: this.Year,
                 FileID_CompanyInfo: this.FileID_CompanyInfo,
-                FileID_BusinessLicense: this.FileID_BusinessLicens,
+                FileID_BusinessLicense: this.FileID_BusinessLicense,
                 FileID_TaxRC: this.FileID_TaxRC,
                 FileID_OrgCodeCer: this.FileID_OrgCodeCer,
                 FileID_IDCardOfLegalRep: this.FileID_IDCardOfLegalRep,

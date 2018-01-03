@@ -1,0 +1,538 @@
+<template>
+    <div class="DAPContainer">
+        <el-row class="smallRow">
+            <el-col>
+                <el-button size="small" :disabled="IsEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
+                <el-button size="small" :disabled="!IsEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
+                <el-button size="small" v-on:click="returnToLastNav">Return</el-button>
+            </el-col>
+        </el-row>
+        <el-row class="smallRow"> 
+            <el-col>
+                <el-row class="tinyRow">
+                    <el-col :span="4" class="colTitle">Dealer Name:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-input v-model="DealerName" :disabled="!IsEdit" size="mini"></el-input>
+                    </el-col>
+                    <el-col :span="4" class="colTitle">Fiscal Year:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="Year">
+                            <el-option v-for="item in yearList" :key="item.value" 
+                                :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col :span="4" class="colTitle">SAP Code:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-input v-model="SAP_Code" :disabled="!IsEdit" size="mini"></el-input>
+                    </el-col>
+                    <el-col :span="4" class="colTitle">BG:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="BU">
+                            <el-option v-for="item in buList" :key="item.value" 
+                                :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col :span="4" class="colTitle">Distribution Area:</el-col>
+                    <el-col :span="18" class="colValue">
+                        <el-input type="textarea" :disabled="!IsEdit" v-model="Distribution_Area" 
+                                    :autosize="{ minRows: 2, maxRows: 9}">
+                        </el-input>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col :span="4" class="colTitle">Distributed Products:</el-col>
+                    <el-col :span="18" class="colValue">
+                        <el-input type="textarea" :disabled="!IsEdit" v-model="Distributed_Products" 
+                                    :autosize="{ minRows: 2, maxRows: 9}">
+                        </el-input>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col :span="4" class="colTitle">Sales Target:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-input-number v-model="Sales_Target" :disabled="!IsEdit" controls-position="right"
+                            :min="0" :max="9999999999" :step="10000" size="mini">
+                        </el-input-number>
+                    </el-col>
+                    <el-col :span="4" class="colTitle">Sales Revenue:</el-col>
+                    <el-col :span="8" class="colValue">
+                        <el-input-number v-model="Sales_Revenue" :disabled="!IsEdit" controls-position="right"
+                            :min="0" :max="9999999999" :step="10000" size="mini">
+                        </el-input-number>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col>
+                        <el-row>
+                            <el-col :span="9"  class="colTitle">Assessment</el-col>
+                            <el-col :span="5"  class="colValue">Points (0-10)</el-col>
+                            <el-col :span="5"  class="colValue">Weight *</el-col>
+                            <el-col :span="5"  class="colValue">Sum</el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="9"  class="colTitle">Sales target achievement</el-col>
+                            <el-col :span="5"  class="colValue">
+                                <el-input-number v-model="STA_Points" :disabled="!IsEdit" controls-position="right"
+                                    :min="0" :max="10" :step="1" size="mini">
+                                </el-input-number>
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{STA_Weight}}%
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{STA_Sum}}
+                            </el-col>
+                        </el-row>
+                         <el-row>
+                            <el-col :span="9"  class="colTitle">Regular project reporting</el-col>
+                            <el-col :span="5"  class="colValue">
+                                <el-input-number v-model="RPR_Points" :disabled="!IsEdit" controls-position="right"
+                                    :min="0" :max="10" :step="1" size="mini">
+                                </el-input-number>
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{RPR_Weight}}%
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{RPR_Sum}}
+                            </el-col>
+                        </el-row>
+                         <el-row>
+                            <el-col :span="9"  class="colTitle">Number of dedicated sales engineers</el-col>
+                            <el-col :span="5"  class="colValue">
+                                <el-input-number v-model="NDSE_Points" :disabled="!IsEdit" controls-position="right"
+                                    :min="0" :max="10" :step="1" size="mini">
+                                </el-input-number>
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{NDSE_Weight}}%
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{NDSE_Sum}}
+                            </el-col>
+                        </el-row>
+                         <el-row>
+                            <el-col :span="9"  class="colTitle">Number of certified service engineers</el-col>
+                            <el-col :span="5"  class="colValue">
+                                <el-input-number v-model="NCSE_Points" :disabled="!IsEdit" controls-position="right"
+                                    :min="0" :max="10" :step="1" size="mini">
+                                </el-input-number>
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{NCSE_Weight}}%
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{NCSE_Sum}}
+                            </el-col>
+                        </el-row>
+                         <el-row>
+                            <el-col :span="9"  class="colTitle">Attended CZ training</el-col>
+                            <el-col :span="5"  class="colValue">
+                                <el-input-number v-model="ACZT_Points" :disabled="!IsEdit" controls-position="right"
+                                    :min="0" :max="10" :step="1" size="mini">
+                                </el-input-number>
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{ACZT_Weight}}%
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{ACZT_Sum}}
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="9"  class="colTitle">Overall assessment score</el-col>
+                            <el-col :span="5"  class="colValue">
+                                &nbsp;
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                &nbsp;
+                            </el-col>
+                            <el-col :span="5"  class="colValue">
+                                {{Sum_Score}}
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col>
+                        <el-row>
+                            <el-col :span="4">
+                                Target achievements of 
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearText1}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearText2}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearText3}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearText4}}
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="4">
+                                In percent
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearPercent1}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearPercent2}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearPercent3}}
+                            </el-col>
+                            <el-col :span="5">
+                                {{LastYearPercent4}}
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col  :span="4" class="colTitle">
+                        Recommended classification in next FY:
+                    </el-col>
+                    <el-col  :span="8" class="colValue">
+                        <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="Recommendation_Status">
+                            <el-option v-for="item in recommendationList" :key="item.value" 
+                                :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                </el-row>
+            </el-col>
+        </el-row>
+    </div>
+</template>
+
+<script>
+import Utility from '../utility/index';
+import { Loading } from 'element-ui';
+
+export default {
+    name: "DealerAssessmentPage",
+    data () {
+        var ylist = Utility.loadYearSelectList();
+        var blist = Utility.loadBUList();
+        var rlist = Utility.loadRecommendedList();
+        return {
+            yearList: ylist,
+            buList: blist,
+            recommendationList: rlist,
+            IsEdit: false,
+
+            id: -1,
+            Dealer_Id: null,
+            Year: null,
+            BU: "MED",
+            NatureOfContractDealer: null,
+            DealerName: null,
+            SAP_Code: null,
+            Distribution_Area: null,
+            Distributed_Products: null,
+            Sales_Target: null,
+            Sales_Revenue: null,
+            STA_Points: null,
+            STA_Weight: null,
+            RPR_Points: null,
+            RPR_Weight: null,
+            NDSE_Points: null,
+            NDSE_Weight: null,
+            NCSE_Points: null,
+            NCSE_Weight: null,
+            ACZT_Points: null,
+            ACZT_Weight: null,
+            Overall_AS: null,
+            Recommendation: null,
+            Recommendation_Status: null,
+            WF_Status: null,
+            SignedSales_Account: null,
+            SignedSales_Name: null,
+            SignedControlling_Account: null,
+            SignedControlling_Name: null,
+            SignedControlling_DateTime: null,
+
+            IsProbation: false,
+            IsDeleted: false
+
+        }
+    },
+    props: ['initData','dealerID','refreshKey'],
+    created () {
+        
+    },
+    watch: {
+        Recommendation_Status: function(newStatus) {
+            if(newStatus && this.IsEdit && newStatus != this.Recommendation_Status &&  newStatus != "") {
+                var newText = Utility.loadDefaultRecommendText(newStatus);
+                this.Recommendation = newText;
+            }
+        }
+    },
+    computed: {
+        STA_Sum: function() {
+            if(this.STA_Points && this.STA_Points > 0) {
+                return this.STA_Points * this.STA_Weight / 100;
+            }
+            return 0;
+        },
+        RPR_Sum: function() {
+            if(this.RPR_Points && this.RPR_Points > 0) {
+                return this.RPR_Points * this.RPR_Weight / 100;
+            }
+            return 0;
+        },
+        NDSE_Sum: function() {
+            if(this.NDSE_Points && this.NDSE_Points > 0) {
+                return this.NDSE_Points * Nthis.DSE_Weight / 100;
+            }
+            return 0;
+        },
+        NCSE_Sum: function() {
+            if(this.NCSE_Points && this.NCSE_Points > 0) {
+                return this.NCSE_Points * this.NCSE_Weight / 100;
+            }
+            return 0;
+        },
+        ACZT_Sum: function() {
+            if(this.ACZT_Points && this.ACZT_Points > 0) {
+                return this.ACZT_Points * this.ACZT_Weight / 100;
+            }
+            return 0;
+        },
+        Sum_Score: function() {
+            var sum = this.STA_Sum + this.RPR_Sum + this.NDSE_Sum + this.NCSE_Sum + this.ACZT_Sum;
+            return sum;
+        },
+        LastYearText1: function() {
+            if(this.Year && this.Year != '') {
+              return  Utility.getPastedFYText(this.Year, 1);
+            }
+            return "NA";
+        },
+        LastYearText2: function() {
+            if(this.Year && this.Year != '') {
+              return  Utility.getPastedFYText(this.Year, 2);
+            }
+            return "NA";
+        },
+        LastYearText3: function() {
+            if(this.Year && this.Year != '') {
+              return  Utility.getPastedFYText(this.Year, 3);
+            }
+            return "NA";
+        },
+        LastYearText4: function() {
+            if(this.Year && this.Year != '') {
+              return  Utility.getPastedFYText(this.Year, 4);
+            }
+            return "NA";
+        },
+        LastYearPercent1: function() {
+            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
+                var pastedYear = (new Number(this.Year) - 1).toString();
+                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
+
+                if(pastScore && pastScore > 0) {
+                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
+                    return (pecent_100 / 100).toString() + "%";
+                }
+            }
+            return "NA";
+        },
+        LastYearPercent2: function() {
+            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
+                var pastedYear = (new Number(this.Year) - 2).toString();
+                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
+
+                if(pastScore && pastScore > 0) {
+                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
+                    return (pecent_100 / 100).toString() + "%";
+                }
+            }
+            return "NA";
+        },
+        LastYearPercent3: function() {
+            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
+                var pastedYear = (new Number(this.Year) - 3).toString();
+                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
+
+                if(pastScore && pastScore > 0) {
+                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
+                    return (pecent_100 / 100).toString() + "%";
+                }
+            }
+            return "NA";
+        },
+        LastYearPercent4: function() {
+            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
+                var pastedYear = (new Number(this.Year) - 4).toString();
+                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
+
+                if(pastScore && pastScore > 0) {
+                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
+                    return (pecent_100 / 100).toString() + "%";
+                }
+            }
+            return "NA";
+        }
+
+    },
+    methods: {
+        ShowLoadingView: function() {
+            Loading.service({ fullscreen: true });
+        },
+        HideLoadingView: function() {
+            let curLoadingInstance = Loading.service({ fullscreen: true });
+            curLoadingInstance.close();
+        },
+        saveValueToServer: function() {
+            //TODO
+            var requestData = {
+                data: this.buildServerData()
+            };
+            var requestUrl = Utility.dfServiceUrl + "/SaveAssessment/UPDATE";
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl, requestData).then((response) => {
+                this.HideLoadingView();
+                if(response.data && response.data.SaveAssessmentResult &&
+                   response.data.SaveAssessmentResult.Status == "success") {
+                       this.$message("Save Success!");
+                       this.IsEdit = false;
+                   } else if(response.data && response.data.SaveAssessmentResult) {
+                       this.$message.error(response.data.SaveAssessmentResult.Message);
+                   } else {
+                       this.$message.error("Save Failed!");
+                   }
+
+            }).catch((error) => {
+                this.HideLoadingView();
+                this.$message.error("Save Failed!");
+            });
+
+        },
+        setInitData: function(data) {
+            if(data) {
+                this.id = data.id;
+                this.Year = data.Year;
+                this.BU = data.BU;
+                this.NatureOfContractDealer = data.NatureOfContractDealer;
+                this.DealerName = data.DealerName;
+                this.SAP_Code = data.SAP_Code;
+                this.Distribution_Area = data.Distribution_Area;
+                this.Distributed_Products = data.Distributed_Products;
+                this.Sales_Target = data.Sales_Target;
+                this.Sales_Revenue = data.Sales_Revenue;
+
+                this.STA_Points = data.STA_Points;
+                if(data.STA_Weight && data.STA_Weight > 0) {
+                    this.STA_Weight = data.STA_Weight;
+                } else {
+                    this.STA_Weight = 70;
+                }
+                this.RPR_Points = data.RPR_Points;
+                if(data.RPR_Weight && data.RPR_Weight > 0) {
+                    this.RPR_Weight = data.RPR_Weight;
+                } else {
+                    this.RPR_Weight = 10;
+                }
+                this.NDSE_Points = data.NDSE_Points;
+                if(data.NDSE_Weight && data.NDSE_Weight > 0) {
+                    this.NDSE_Weight = data.NDSE_Weight;
+                } else {
+                    this.NDSE_Weight = 10;
+                }
+                this.NCSE_Points = data.NCSE_Points;
+                if(data.NCSE_Weight && data.NCSE_Weight > 0) {
+                    this.NCSE_Weight = data.NCSE_Weight;
+                } else {
+                    this.NCSE_Weight = 5;
+                }
+                this.ACZT_Points = data.ACZT_Points;
+                if(data.ACZT_Weight && data.ACZT_Weight > 0) {
+                    this.ACZT_Weight = data.ACZT_Weight;
+                } else {
+                    this.ACZT_Weight = 5;
+                }
+
+                this.Overall_AS = data.Overall_AS;
+                this.WF_Status = data.WF_Status;
+                this.SignedSales_Account = data.SignedSales_Account;
+                this.SignedSales_Name = data.SignedSales_Name;
+                this.SignedControlling_Account = data.SignedControlling_Account;
+                this.SignedControlling_Name = data.SignedControlling_Name;
+                this.SignedControlling_DateTime = data.SignedControlling_DateTime;
+                this.IsProbation = data.IsProbation;
+                this.IsDeleted = data.IsDeleted;
+                this.Recommendation = data.Recommendation;
+                this.Recommendation_Status = data.Recommendation_Status;
+
+            } else {
+                //To do, should all have data
+            }
+        },
+        buildServerData: function() {
+            var result = {
+                id: this.id,
+                Dealer_Id: this.Dealer_Id,
+                Year: this.Year,
+                BU: this.BU,
+                NatureOfContractDealer: this.NatureOfContractDealer,
+                DealerName: this.DealerName,
+                SAP_Code: this.SAP_Code,
+                Distribution_Area: this.Distribution_Area,
+                Distributed_Products: this.Distributed_Products,
+                Sales_Target: this.Sales_Target,
+                Sales_Revenue: this.Sales_Revenue,
+                STA_Points: this.STA_Points,
+                STA_Weight: this.STA_Weight,
+                RPR_Points: this.RPR_Points,
+                RPR_Weight: this.RPR_Weight,
+                NDSE_Points: this.NDSE_Points,
+                NDSE_Weight: this.NDSE_Weight,
+                NCSE_Points: this.NCSE_Points,
+                NCSE_Weight: this.NCSE_Weight,
+                ACZT_Points: this.ACZT_Points,
+                ACZT_Weight: this.ACZT_Weight,
+                Overall_AS: this.Overall_AS,
+                IsProbation: this.IsProbation,
+                Recommendation: this.Recommendation,
+                Recommendation_Status: this.Recommendation_Status
+            };
+            return result;
+        },
+        returnToLastNav: function() {
+            this.$emit("close");
+        }
+    }
+}
+</script>
+
+<style scoped>
+.smallRow 
+{
+    padding: 15px 0px 10px 0px;
+    text-align: left;
+}
+.tinyRow {
+    padding: 5px 0px 5px 0px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 20px;
+    border-bottom: 1px solid black;
+}
+.colTitle {
+    padding-left: 15px;
+}
+.colValue {
+    padding-left: 10px;
+}
+</style>
+

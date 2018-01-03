@@ -25,8 +25,14 @@
       </el-row>
       <el-row class="SectionTitle">
           <el-col :span="22" :offset="1">
+              <DealerAssessmentList :dealerID="dealerId"  :assessmentList="assessmentList" :contractList="contractList"
+                :isAllowEdit="true" v-on:ReloadAssessmentList="loadAssessmentListFromServer"></DealerAssessmentList>
+          </el-col>
+      </el-row>
+      <el-row class="SectionTitle">
+          <el-col :span="22" :offset="1">
               <CompanyInfoList v-on:ReloadCompanyList="loadCompanyInfoListFromServer" :dealerID="dealerId" 
-              :CompanyInfoDatas="companyList" :isAllowEdit="true" v-on:ReloadAttList="">
+              :CompanyInfoDatas="companyList" :isAllowEdit="true" >
               </CompanyInfoList>
           </el-col>
       </el-row>
@@ -39,6 +45,7 @@ import BasicInfo from './BasicInfo';
 import AchievementList from './AchievementList';
 import ContractLogList from './ContractLogList';
 import CompanyInfoList from './CompanyInfoList';
+import DealerAssessmentList from './DealerAssessmentList';
 import { Loading } from 'element-ui';
 
 export default {
@@ -52,11 +59,12 @@ export default {
             achList: null,
             companyList: null,
             contractList: null,
+            assessmentList: null,
             fileList: null,
             picUserInfo: null
         }
     },
-    components: {BasicInfo, AchievementList,ContractLogList,CompanyInfoList},
+    components: {BasicInfo, AchievementList,ContractLogList,CompanyInfoList,DealerAssessmentList},
     watch: {
         '$route' (to, from) {
             if(this.$route.params && this.$route.params.dealerId) {
@@ -102,9 +110,11 @@ export default {
                     this.contractList = responseData.dfContractList;
                     this.fileList = responseData.dfFileAttachList;
                     this.picUserInfo = responseData.userInfoOfPIC;
+                    this.assessmentList = responseData.dfAssessmentList;
 
                     this.$store.commit('initAttList',responseData.dfFileAttachList);
                     this.$store.commit('setSignCount', this.contractList? this.contractList.length : 0);
+                    this.$store.commit('initAssessmentScoreList',responseData.dfAssessmentList);
 
                 } else if(response.data && response.data.LoadDealerFileDetailResult) {
                     this.$message.error(response.data.LoadDealerFileDetailResult.Message);
@@ -186,6 +196,27 @@ export default {
                         this.$message.error(response.data.LoadContractListResult.Message)
                     } else {
                         this.$message.error("load Contract list failed!");
+                    }
+            }).catch((error) => {
+                this.HideLoadingView();
+                this.$message.error(error.message);
+            });
+        },
+        loadAssessmentListFromServer: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadAssessmentList/" + this.dealerId;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                if(response.data && response.data.LoadAssessmentListResult 
+                    && response.data.LoadAssessmentListResult.Status == "success") {
+                        this.assessmentList = response.data.LoadAssessmentListResult.Data;
+                        this.$store.commit('initAssessmentScoreList', response.data.LoadAssessmentListResult.Data);
+                    } else if(response.data && response.data.LoadAssessmentListResult) {
+                        this.$message.error(response.data.LoadAssessmentListResult.Message)
+                    } else {
+                        this.$message.error("Load failed!");
                     }
             }).catch((error) => {
                 this.HideLoadingView();

@@ -305,6 +305,22 @@
         </el-row>
         <el-row class="smallRow">
             <el-col :span="6">
+                经销商业绩确认书
+            </el-col>
+            <el-col :span="8">
+                <el-upload
+                    class="upload-demo" :disabled="!this.IsEdit || this.UploadDisable" :file-list="bdFileList"
+                    :action="this.fileBaseUrl + '?method=uploadDFAttachment&dealerID=' + this.dealerID"
+                    :show-file-list="true" :on-progress="FileProcess" :on-error="FileUploadFailed"
+                    :on-success="BDFileUploadSuccess" :on-remove="DeleteBDFile"
+                    :on-preview="FileDownLoad">
+                    <el-button size="small" type="primary"  icon="upload"
+                    :disabled="!this.IsEdit || this.UploadDisable">点击上传</el-button>
+                </el-upload>
+            </el-col>
+        </el-row>
+        <el-row class="smallRow">
+            <el-col :span="6">
                 Dealer Assessment Form<br />
                 经销商评估表
             </el-col>
@@ -378,12 +394,14 @@ export default {
 
             Remark: null,
             DAFFileID: null,
+            FileID_BusinessDoc: null,
             IsEdit: false,
             id: null,
             IsDeleted: false,
             UploadDisable: false,
             fileBaseUrl: Utility.fileServiceUrl,
             dfFileList: [],
+            bdFileList: [],
             formStatus: "NEW"
         }
     },
@@ -634,12 +652,16 @@ export default {
             curLoadingInstance.close();
         },
         setValues: function(data) {
+            if(this.Status == "NEW") {
+                this.IsEdit = true;
+            }
             if(data)
             {
                 this.id = data.id;
                 this.selectedYear = data.Year;
                 this.Remark = data.Remark;
                 this.DAFFileID = data.FileID_DAF;
+                this.FileID_BusinessDoc = data.FileID_BusinessDoc;
                 this.IsDeleted = data.IsDeleted;
 
                 this.Q1_TargetNum = data.Q1_TargetNum;
@@ -673,12 +695,14 @@ export default {
                 this.Q4_DiscountContract = data.Q4_DiscountContract;
                 this.Q4_OINO = data.Q4_OINO;
                 this.Q4_UsedMoney = data.Q4_UsedMoney;
-                this.initFileList(data.FileID_DAF);
+                this.dfFileList = this.initFileList(data.FileID_DAF);
+                this.bdFileList = this.initFileList(data.FileID_BusinessDoc);
             } else {
-                this.id = null;
+                this.id = -1;
                 this.selectedYear = null;
                 this.Remark = null;
                 this.DAFFileID = null;
+                this.FileID_BusinessDoc = number;
                 this.IsDeleted = false;
 
                 this.Q1_TargetNum = null;
@@ -713,6 +737,7 @@ export default {
                 this.Q4_OINO = null;
                 this.Q4_UsedMoney = null;
                 this.dfFileList = [];
+                this.bdFileList = [];
             }
         },
         initFileList: function(fileIds) {
@@ -735,9 +760,9 @@ export default {
                         }
                     }
                 }
-                this.dfFileList = fileArr.toArray();
+                return fileArr.toArray();
             } else {
-                this.dfFileList = [];
+                return [];
             }
         },
         FileProcess: function() {
@@ -750,6 +775,19 @@ export default {
         FileUploadSuccess: function(response, file, fileList) {
             this.HideLoadingView();
             this.DAFFileID =this.DAFFileID + response + ";";
+            file.id = response;
+            file.url = this.fileBaseUrl + '?method=loadDFAttachment&fileID=' + response,
+            this.$message("Upload Success!");
+
+            this.$store.commit('addAtt',{
+                id: response,
+                dealer_id: this.dealerID,
+                Doc_Name: file.name
+            })
+        },
+        BDFileUploadSuccess: function(response, file, fileList) {
+            this.HideLoadingView();
+            this.FileID_BusinessDoc =this.FileID_BusinessDoc + response + ";";
             file.id = response;
             file.url = this.fileBaseUrl + '?method=loadDFAttachment&fileID=' + response,
             this.$message("Upload Success!");
@@ -779,6 +817,27 @@ export default {
                     }
                }
                this.DAFFileID = iResult;
+               this.removeFileFromServer(file.id);
+            } else {
+                this.$message.error("file id is null!");
+            }
+        },
+        DeleteBDFile: function(file, fileList) {
+            //var i = file;
+            //todo
+            if(file && file.id)
+            {
+               var idArr = this.FileID_BusinessDoc.split(";");
+               var iResult = "";
+               for(var id in idArr) {
+                    var fileId = idArr[id];
+
+                    if(fileId !=  file.id && fileId != "") {
+                        iResult += fileId + ";";
+                    }
+               }
+               this.FileID_BusinessDoc = iResult;
+               this.removeFileFromServer(file.id);
             } else {
                 this.$message.error("file id is null!");
             }
@@ -787,13 +846,26 @@ export default {
             this.$emit("close");
             //this.$router.go(-1);
         },
+        removeFileFromServer: function(id) {
+            var requestUrl = Utility.dfServiceUrl + "/DeleteAttachment/" + this.dealerID + "/"  + id;
+            this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((response) => {
+                this.HideLoadingView();
+
+                this.$message("Delete success!");
+            }).catch((error) => {
+                this.HideLoadingView();
+                //this.$message.error(error.data.message);
+            });
+        },  
         saveValueToServer: function() {
             var achData = this.buildServerData_AchievementHistory();
             var requestUrl = Utility.dfServiceUrl + "/SaveAchievement/";
-            if(this.formStatus == "NEW") {
-                requestUrl += "NEW";
-            } else {
+            if(this.id && this.id != -1) {
                 requestUrl += "UPDATE";
+            } else {
+                requestUrl += "NEW";
             }
 
             var requestData = {
@@ -827,7 +899,7 @@ export default {
         },
         buildServerData_AchievementHistory: function() {
             var result = {
-                id : this.id ? this.id : 0,
+                id : this.id ? this.id : -1,
                 dealer_id: this.dealerID,
                 Year: this.selectedYear,
 
@@ -881,6 +953,7 @@ export default {
                 Total_UsedMoney: this.Total_UsedMoney,
 
                 FileID_DAF: this.DAFFileID,
+                FileID_BusinessDoc: this.FileID_BusinessDoc,
                 Remark: this.Remark,
                 IsDeleted: this.IsDeleted
             };

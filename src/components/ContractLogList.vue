@@ -9,7 +9,8 @@
         </el-row>
         <el-row v-if="!IsHide">
             <el-col>
-                <el-button type="primary" size="small" v-on:click="CreateNewContract" >Create New</el-button>
+                <el-button type="primary" size="small" v-on:click="CreateNewContract" 
+                    :disabled="!isAllowEdit">Create New</el-button>
             </el-col>
         </el-row>
         <el-row v-if="!IsHide">
@@ -17,12 +18,18 @@
                 <el-table :data="contractListData" stripe style="width: 100%">
                     <el-table-column width="200">
                         <template slot-scope="scope">
-                            <el-button type="primary" size="mini" v-on:click="EditContract(scope.row)" :disabled="!isAllowEdit">Edit</el-button>
-                            <el-button type="primary" size="mini" v-on:click="DeleteContract(scope.row)" :disabled="!isAllowEdit">Delete</el-button>
+                            <el-button type="primary" size="mini" v-on:click="EditContract(scope.row)" 
+                                v-if="isAllowEdit">Edit</el-button>
+                            <el-button type="primary" size="mini" v-on:click="EditContract(scope.row)" 
+                                v-else>View</el-button>
+                            <el-button type="primary" size="mini" v-on:click="DeleteContract(scope.row)" 
+                                :disabled="!isAllowEdit">Delete</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column prop="Year" label="FYShow" width="100">
-
+                        <template slot-scope="scope">
+                            {{getFYText(scope.row.Year)}}
+                        </template>
                     </el-table-column>
                     <el-table-column prop="ActPeriod_StartDate" label="from" width="140">
                         <template slot-scope="scope">
@@ -83,6 +90,9 @@ export default {
         HideLoadingView: function() {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
+        },
+        getFYText: function(year){
+            return Utility.getFYText(year);
         },
         formatDate: function(data) {
             return Utility.formatDateToString(data);
