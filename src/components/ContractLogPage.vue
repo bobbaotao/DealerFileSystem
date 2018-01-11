@@ -152,7 +152,7 @@
                         Remark<br />其他备注
                     </el-col>
                     <el-col class="colValue" :span="18"> 
-                        <el-input :disabled="!IsEdit" type="textarea" 
+                        <el-input :disabled="!IsEdit" type="textarea"  
                         :autosize="{ minRows: 2, maxRows: 9}" v-model="Remark"></el-input>
                     </el-col>
                 </el-row>

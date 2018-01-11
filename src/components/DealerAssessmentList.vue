@@ -33,7 +33,7 @@
                     </el-table-column>
                     <el-table-column prop="Overall_AS" label="Score" width="150">
                         <template slot-scope="scope">
-                            {{scope.row.Overall_AS}}
+                            {{scope.row.Overall_AS / 100}}
                         </template>
                     </el-table-column>
                     <el-table-column prop="Recommendation_Status" label="Recommendation" width="200">
@@ -49,9 +49,10 @@
                 </el-table>
             </el-col>
         </el-row>
-        <el-dialog title="Dealer Assessment" :visible.sync="DialogAssessmentVisible" :fullscreen="true">
+        <el-dialog title="Dealer Assessment" :visible.sync="DialogAssessmentVisible"  
+            v-on:close="reloadAssessmentList" :fullscreen="true">
             <DealerAssessmentPage :initData="assessmentDiaData" :refreshKey="refreshKey" :dealerID="dealerID"
-                >
+                v-on:close="dialogClose">
             </DealerAssessmentPage>
         </el-dialog>
         <!-- <el-dialog title="Choose A Contract" :visible.sync="DialogSelectContract" >
@@ -167,6 +168,12 @@ export default {
                     //var 
                 });
             }
+        },
+        dialogClose: function() {
+            this.DialogAssessmentVisible = false;
+        },
+        reloadAssessmentList: function() {
+            this.$emit("ReloadAssessmentList");   
         }
     }
 }

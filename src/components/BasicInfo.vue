@@ -62,7 +62,7 @@
                         经销商状态
                     </el-col>
                     <el-col :span="6">
-                        <el-select v-model="DealerStatus" :disabled="!isEdit" size="mini">
+                        <el-select v-model="DealerStatus" :disabled="!isEdit">
                             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value">
                             </el-option>
                         </el-select>
@@ -80,8 +80,12 @@
                         Sales Region<br />
                         销售区域
                     </el-col>
-                    <el-col :span="6">
-                        <el-input v-model="SalesRegion" :disabled="!isEdit" size="mini"></el-input>
+                    <el-col :span="8">
+                        <!-- <el-input v-model="SalesRegion" :disabled="!isEdit" size="mini"></el-input> -->
+                        <el-select :disabled="!isEdit" class="middleSelector" multiple v-model="SalesRegionList">
+                          <el-option v-for="item in srOptions" :key="item.value" 
+                            :label="item.label" :value="item.value"></el-option>
+                        </el-select>
                     </el-col>
                 </el-row>
                 <el-row class="middleRow">
@@ -170,6 +174,7 @@ import Utility from '../utility/index'
 export default {
   name: 'BasicInfo',
   data() {
+      var srList = Utility.loadDealerRegionList();
       return {
             Appointed_Products: null,
             DealerAddress: null,
@@ -184,6 +189,7 @@ export default {
             Remark: null,
             SalesProductType: null,
             SalesRegion: null,
+            SalesRegionList: [],
             Sign_Times: null,
             dealerCode: null,
             dealerName_CN: null,
@@ -194,6 +200,7 @@ export default {
             salesTarget: null,
             isHide: false,
 
+            srOptions: srList,
             statusOptions: [{value: '考察期',label: '考察期'},
                       {value: '正式经销商暂不授权',label: '正式经销商暂不授权'},
                       {value: '正式经销商',label: '正式经销商'},
@@ -240,6 +247,9 @@ export default {
             this.dealer_id = basicInfoData.dealer_id;
             this.salesTarget = basicInfoData.salesTarget;
             this.PersonInChargeAccount = basicInfoData.PersonInChargeAccount;
+            if(basicInfoData.SalesRegion && basicInfoData.SalesRegion != "") {
+                this.SalesRegionList = basicInfoData.SalesRegion.split(";");
+            }
         },
         setPICData: function(picData) {
             this.PersonInChargeName = picData.UserName;
@@ -281,6 +291,9 @@ export default {
 }
 .smallRow {
     padding: 3px 0px 3px 0px;
+}
+.middleSelector {
+    width: 250px;
 }
 </style>
 

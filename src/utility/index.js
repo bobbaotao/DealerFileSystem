@@ -37,7 +37,7 @@ module.exports = {
     loadYearSelectList: function() {
         yearArr = new array();
 
-        for (var i = 2; i > -9; i--) {
+        for (var i = 1; i > -9; i--) {
             curYearNum1 = (moment().year() + i) % 100;
             curYearNum2 = (moment().year() + i + 1) % 100;
             curYearNum1 = curYearNum1 > 9 ? curYearNum1.toString() : "0" + curYearNum1;
@@ -142,31 +142,31 @@ module.exports = {
             label: "Dental",
             value: "Dental"
         }, {
-            label: "MCS East",
+            label: "MCS_East",
             value: "MCS_East"
         }, {
-            label: "MCS Middle",
+            label: "MCS_Middle",
             value: "MCS_Middle"
         }, {
-            label: "MCS NorthCentral",
+            label: "MCS_NorthCentral",
             value: "MCS_NorthCentral"
         }, {
-            label: "MCS Northeast",
+            label: "MCS_Northeast",
             value: "MCS_Northeast"
         }, {
-            label: "MCS South",
+            label: "MCS_South",
             value: "MCS_South"
         }, {
-            label: "MCS Southwest",
+            label: "MCS_Southwest",
             value: "MCS_Southwest"
         }, {
-            label: "OPH East",
+            label: "OPH_East",
             value: "OPH_East"
         }, {
-            label: "OPH North",
+            label: "OPH_North",
             value: "OPH_North"
         }, {
-            label: "OPH Southwest",
+            label: "OPH_Southwest",
             value: "OPH_Southwest"
         }, {
             label: "National",
@@ -178,6 +178,7 @@ module.exports = {
     },
     buildServerData_BasicInfo: function(data) {
         var fsDate = this.formatDateToServerObj(data.First_SignDate);
+        var srValue = data.SalesRegionList.join(";");
         var result = {
             Appointed_Products: data.Appointed_Products,
             DealerAddress: data.DealerAddress,
@@ -189,7 +190,7 @@ module.exports = {
             PersonInChargeAccount: data.PersonInChargeAccount,
             Remark: data.Remark,
             SalesProductType: data.SalesProductType,
-            SalesRegion: data.SalesRegion,
+            SalesRegion: srValue,
             Sign_Times: data.Sign_Times,
             dealerCode: data.dealerCode,
             dealerName_CN: data.dealerName_CN,

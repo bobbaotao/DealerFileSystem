@@ -37,14 +37,22 @@
         acProps: 'label'
       }
     },
-    props: ['userInitData','isEdit'],
+    props: ['userInitData','isEdit', 'userInitAccount'],
     created: function() {
-        this.resetUser(this.userInitData);
+        if(this.userInitData) {
+            this.resetUser(this.userInitData);
+        }
+        if(this.userInitAccount) {
+            this.loadUserInfo(this.userInitAccount);
+        }
     },
     watch: {
         userInitData: function(newValue) {
             this.resetUser(newValue);
-        }  
+        },
+        userInitAccount: function(newValue) {
+             this.loadUserInfo(this.userInitAccount);
+        } 
     },
     methods: {
         resetUser: function(data) {
@@ -101,6 +109,23 @@
                 this.handleSelect(response.data.SearchUserResult.Data[0]);
                 }
             }
+            }).catch((error) => {
+
+            });
+        },
+        loadUserInfo: function(account) {
+            this.axiosCancelSource.cancel();
+            if(account == null || account == '') {
+                return;
+            }
+            var requestUrl = utility.cdServiceUrl + "/LoadUserByAccount/" + account;
+
+            this.axios.post(requestUrl).then((response) => {
+            if(response.data && response.data.LoadUserByAccountResult 
+                && response.data.LoadUserByAccountResult.Status =="success") {
+                    this.selectedUser = response.data.LoadUserByAccountResult.Data.userName;
+                    this.handleSelect(response.data.LoadUserByAccountResult.Data);
+                }
             }).catch((error) => {
 
             });

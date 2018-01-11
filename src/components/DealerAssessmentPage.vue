@@ -4,6 +4,8 @@
             <el-col>
                 <el-button size="small" :disabled="IsEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
                 <el-button size="small" :disabled="!IsEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
+                <el-button size="small" v-if="WF_Status && WF_Status == '1'"
+                    :disabled="IsEdit" type="primary" v-on:click="startWF">Start Assessment Process</el-button>
                 <el-button size="small" v-on:click="returnToLastNav">Return</el-button>
             </el-col>
         </el-row>
@@ -67,15 +69,15 @@
                 </el-row>
                 <el-row class="tinyRow">
                     <el-col>
-                        <el-row>
-                            <el-col :span="9"  class="colTitle">Assessment</el-col>
-                            <el-col :span="5"  class="colValue">Points (0-10)</el-col>
+                        <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Assessment</el-col>
+                            <el-col :span="6"  class="colValue">Points (0-10)</el-col>
                             <el-col :span="5"  class="colValue">Weight *</el-col>
                             <el-col :span="5"  class="colValue">Sum</el-col>
                         </el-row>
-                        <el-row>
-                            <el-col :span="9"  class="colTitle">Sales target achievement</el-col>
-                            <el-col :span="5"  class="colValue">
+                        <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Sales target achievement</el-col>
+                            <el-col :span="6"  class="colValue">
                                 <el-input-number v-model="STA_Points" :disabled="!IsEdit" controls-position="right"
                                     :min="0" :max="10" :step="1" size="mini">
                                 </el-input-number>
@@ -87,9 +89,9 @@
                                 {{STA_Sum}}
                             </el-col>
                         </el-row>
-                         <el-row>
-                            <el-col :span="9"  class="colTitle">Regular project reporting</el-col>
-                            <el-col :span="5"  class="colValue">
+                         <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Regular project reporting</el-col>
+                            <el-col :span="6"  class="colValue">
                                 <el-input-number v-model="RPR_Points" :disabled="!IsEdit" controls-position="right"
                                     :min="0" :max="10" :step="1" size="mini">
                                 </el-input-number>
@@ -101,9 +103,9 @@
                                 {{RPR_Sum}}
                             </el-col>
                         </el-row>
-                         <el-row>
-                            <el-col :span="9"  class="colTitle">Number of dedicated sales engineers</el-col>
-                            <el-col :span="5"  class="colValue">
+                         <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Number of dedicated sales engineers</el-col>
+                            <el-col :span="6"  class="colValue">
                                 <el-input-number v-model="NDSE_Points" :disabled="!IsEdit" controls-position="right"
                                     :min="0" :max="10" :step="1" size="mini">
                                 </el-input-number>
@@ -115,9 +117,9 @@
                                 {{NDSE_Sum}}
                             </el-col>
                         </el-row>
-                         <el-row>
-                            <el-col :span="9"  class="colTitle">Number of certified service engineers</el-col>
-                            <el-col :span="5"  class="colValue">
+                         <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Number of certified service engineers</el-col>
+                            <el-col :span="6"  class="colValue">
                                 <el-input-number v-model="NCSE_Points" :disabled="!IsEdit" controls-position="right"
                                     :min="0" :max="10" :step="1" size="mini">
                                 </el-input-number>
@@ -129,9 +131,9 @@
                                 {{NCSE_Sum}}
                             </el-col>
                         </el-row>
-                         <el-row>
-                            <el-col :span="9"  class="colTitle">Attended CZ training</el-col>
-                            <el-col :span="5"  class="colValue">
+                         <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Attended CZ training</el-col>
+                            <el-col :span="6"  class="colValue">
                                 <el-input-number v-model="ACZT_Points" :disabled="!IsEdit" controls-position="right"
                                     :min="0" :max="10" :step="1" size="mini">
                                 </el-input-number>
@@ -143,24 +145,24 @@
                                 {{ACZT_Sum}}
                             </el-col>
                         </el-row>
-                        <el-row>
-                            <el-col :span="9"  class="colTitle">Overall assessment score</el-col>
-                            <el-col :span="5"  class="colValue">
+                        <el-row  class="miniRow">
+                            <el-col :span="6"  class="colTitle">Overall assessment score</el-col>
+                            <el-col :span="6"  class="colValue">
                                 &nbsp;
                             </el-col>
                             <el-col :span="5"  class="colValue">
                                 &nbsp;
                             </el-col>
                             <el-col :span="5"  class="colValue">
-                                {{Sum_Score}}
+                                {{Sum_Score / 100}}
                             </el-col>
                         </el-row>
                     </el-col>
                 </el-row>
-                <el-row>
+                <el-row  class="tinyRow">
                     <el-col>
-                        <el-row>
-                            <el-col :span="4">
+                        <el-row class="miniRow">
+                            <el-col :span="4" class="colTitle">
                                 Target achievements of 
                             </el-col>
                             <el-col :span="5">
@@ -176,8 +178,8 @@
                                 {{LastYearText4}}
                             </el-col>
                         </el-row>
-                        <el-row>
-                            <el-col :span="4">
+                        <el-row  class="miniRow">
+                            <el-col :span="4" class="colTitle">
                                 In percent
                             </el-col>
                             <el-col :span="5">
@@ -195,15 +197,36 @@
                         </el-row>
                     </el-col>
                 </el-row>
-                <el-row>
-                    <el-col  :span="4" class="colTitle">
-                        Recommended classification in next FY:
-                    </el-col>
-                    <el-col  :span="8" class="colValue">
-                        <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="Recommendation_Status">
-                            <el-option v-for="item in recommendationList" :key="item.value" 
-                                :label="item.label" :value="item.value"></el-option>
-                        </el-select>
+                <el-row  class="tinyRow">
+                    <el-col>
+                        <el-row class="miniRow">
+                            <el-col :span="4" class="colTitle">
+                                Sales:
+                            </el-col>
+                            <el-col :span="8" class="colValue">
+                                <ZeissPeoplePicker ref="picPicker" :isEdit="IsEdit" 
+                                    v-bind:userInitAccount="SignedSales_Account"></ZeissPeoplePicker>
+                            </el-col>
+                            <el-col  :span="4" class="colTitle">
+                                Recommended classification in next FY:
+                            </el-col>
+                            <el-col  :span="8" class="colValue">
+                                <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="Recommendation_Status">
+                                    <el-option v-for="item in recommendationList" :key="item.value" 
+                                        :label="item.label" :value="item.value"></el-option>
+                                </el-select>
+                            </el-col>
+                        </el-row>
+                        <el-row  class="miniRow">
+                            <el-col  :span="4" class="colTitle">
+                                Comments:
+                            </el-col>
+                            <el-col  :span="18" class="colValue">
+                                <el-input type="textarea" v-model="Recommendation" :disabled="!IsEdit"
+                                    :autosize="{ minRows: 2, maxRows: 9}">
+                                </el-input>
+                            </el-col>
+                        </el-row>
                     </el-col>
                 </el-row>
             </el-col>
@@ -214,6 +237,7 @@
 <script>
 import Utility from '../utility/index';
 import { Loading } from 'element-ui';
+import ZeissPeoplePicker from './ZeissPeoplePicker'
 
 export default {
     name: "DealerAssessmentPage",
@@ -264,15 +288,24 @@ export default {
         }
     },
     props: ['initData','dealerID','refreshKey'],
+    components: {
+        ZeissPeoplePicker
+    },
     created () {
-        
+        this.setInitData(this.initData);
     },
     watch: {
         Recommendation_Status: function(newStatus) {
-            if(newStatus && this.IsEdit && newStatus != this.Recommendation_Status &&  newStatus != "") {
+            if(newStatus && this.IsEdit &&  newStatus != "") {
                 var newText = Utility.loadDefaultRecommendText(newStatus);
                 this.Recommendation = newText;
             }
+        },
+        initData: function(newValue) {
+            this.setInitData(newValue);
+        },
+        refreshKey: function(newKey) {
+            this.setInitData(this.initData);
         }
     },
     computed: {
@@ -290,7 +323,7 @@ export default {
         },
         NDSE_Sum: function() {
             if(this.NDSE_Points && this.NDSE_Points > 0) {
-                return this.NDSE_Points * Nthis.DSE_Weight / 100;
+                return this.NDSE_Points * this.NDSE_Weight / 100;
             }
             return 0;
         },
@@ -307,7 +340,9 @@ export default {
             return 0;
         },
         Sum_Score: function() {
-            var sum = this.STA_Sum + this.RPR_Sum + this.NDSE_Sum + this.NCSE_Sum + this.ACZT_Sum;
+            //javascript float type count!!! this is a stupid issue
+            var sum = Math.round(this.STA_Sum * 100) + Math.round(this.RPR_Sum * 100) +
+             Math.round(this.NDSE_Sum * 100) + Math.round(this.NCSE_Sum * 100) + Math.round(this.ACZT_Sum * 100);
             return sum;
         },
         LastYearText1: function() {
@@ -479,9 +514,11 @@ export default {
             }
         },
         buildServerData: function() {
+            var salesAccount = this.$refs.picPicker.userAccount;
+            var salesName = this.$refs.picPicker.username;
             var result = {
                 id: this.id,
-                Dealer_Id: this.Dealer_Id,
+                Dealer_Id: this.dealerID,
                 Year: this.Year,
                 BU: this.BU,
                 NatureOfContractDealer: this.NatureOfContractDealer,
@@ -501,15 +538,76 @@ export default {
                 NCSE_Weight: this.NCSE_Weight,
                 ACZT_Points: this.ACZT_Points,
                 ACZT_Weight: this.ACZT_Weight,
-                Overall_AS: this.Overall_AS,
+                Overall_AS: this.Sum_Score,
                 IsProbation: this.IsProbation,
                 Recommendation: this.Recommendation,
-                Recommendation_Status: this.Recommendation_Status
+                Recommendation_Status: this.Recommendation_Status,
+                SignedSales_Account: salesAccount,
+                SignedSales_Name: salesName
             };
             return result;
         },
         returnToLastNav: function() {
             this.$emit("close");
+        },
+        startWF: function() {
+            if(this.validateIfCanStartWF()) {
+                var requestUrl = Utility.dfServiceUrl + "/StartAssessmentWF/" + this.dealerID + "/" + this.id;
+                this.ShowLoadingView();
+
+                this.axios.post(requestUrl).then((response) => {
+                    this.HideLoadingView();
+                    if(response.data && response.data.StartAssessmentWFResult 
+                        && response.data.StartAssessmentWFResult.Status == "success") {
+                            this.WF_Status = "2";
+                            this.$message("Process Start Success!");
+                        } else if(response.data && response.data.StartAssessmentWFResult) {
+                            this.$message.error(response.data.StartAssessmentWFResult.Message);
+                        } else {
+                            this.$message.error("Process Start failed!");
+                        }
+
+                }).catch((error) => {
+                    this.HideLoadingView();
+                    this.$message.error(error.data.Message);
+                });
+            }
+        },
+        validateIfCanStartWF: function() {
+            if(!this.DealerName || this.DealerName == "") {
+                this.$message.error("Dealer name is empty!");
+                return false;
+            }
+            if(!this.Year || this.Year == "") {
+                this.$message.error("FY Year is empty!");
+                return false;
+            }
+            if(!this.BU || this.BU == "") {
+                this.$message.error("BU is empty!");
+                return false;
+            }
+            if(!this.Sum_Score || this.Sum_Score == "" || this.Sum_Score == "NA" || this.Sum_Score== 0) {
+                this.$message.error("Overall assessment score is empty or 0 or NA!");
+                return false;
+            }
+            if(!this.Recommendation || this.Recommendation == "") {
+                this.$message.error("Recommendation is empty!");
+                return false;
+            }
+            if(!this.Recommendation_Status || this.Recommendation_Status == "") {
+                this.$message.error("Recommendation Status is empty!");
+                return false;
+            }
+            var salesAccount = this.$refs.picPicker.userAccount;
+            if(!salesAccount || salesAccount == "") {
+                this.$message.error("Sales is empty!");
+                return false;
+            }
+            if(!this.WF_Status || this.WF_Status == "2" || this.WF_Status == "3" || this.WF_Status == "4") {
+                this.$message.error("WF is running!");
+                return false;
+            }
+            return true;
         }
     }
 }
@@ -527,6 +625,12 @@ export default {
     font-size: 14px;
     line-height: 20px;
     border-bottom: 1px solid black;
+}
+.miniRow {
+    padding: 3px 0px 3px 0px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 20px;
 }
 .colTitle {
     padding-left: 15px;
