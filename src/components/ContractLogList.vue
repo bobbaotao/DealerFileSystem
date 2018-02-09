@@ -3,7 +3,7 @@
         <el-row class="SectionTitle">
             <el-col>
                 <span v-on:click="IsHide = !IsHide"  style="padding-left:20px">
-                     <i class="el-icon-plus" v-if="IsHide"></i><i class="el-icon-minus" v-else></i>Dealer Agreement Management / 经销商签约记录
+                     <i class="el-icon-plus" v-if="IsHide"></i><i class="el-icon-minus" v-else></i> Dealer Agreement Management / 经销商签约记录
                 </span>
             </el-col>
         </el-row>
@@ -57,7 +57,8 @@
         </el-row>
         <el-dialog title="Dealer Agreement" :visible.sync="DialogContractVisable" :fullscreen="true">
             <ContractLogPage :refreshKey="refreshKey" :dealerID="dealerID" :Status="contractViewStatus"
-            :initData="contractViewInitData" v-on:close="handlerDialogClose" v-on:refresh="handlerRefersh"></ContractLogPage>
+            :initData="contractViewInitData" :isAllowEdit="isAllowEdit"
+            v-on:close="handlerDialogClose" v-on:refresh="handlerRefersh"></ContractLogPage>
         </el-dialog>
     </div>
 </template>
@@ -102,7 +103,7 @@ export default {
         },
         handlerDialogClose: function() {
             this.DialogContractVisable = false;
-            this.$emit("reloadContractList");
+            //this.$emit("reloadContractList");
         },
         handlerRefersh: function() {
             //todo

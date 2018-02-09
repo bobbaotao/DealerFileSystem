@@ -43,8 +43,8 @@
         </el-row>
         <el-dialog title="Company Info" :fullscreen="true" :visible.sync="diaConpanyInfoVisible">
             <CompanyInfoPage v-bind:initData="diaInitData"  v-bind:dealerID="dealerID"
-                        v-bind:RefreshKey= "refrshKey" v-bind:Status="diaStatus" 
-                        v-on:close="handlerCloseDialog">
+                        v-bind:RefreshKey= "refrshKey" v-bind:Status="diaStatus" :isAllowEdit="isAllowEdit"
+                        v-on:close="handlerCloseDialog" v-on:Refersh="handlerRefersh">
             </CompanyInfoPage>
         </el-dialog>
     </div>
@@ -95,7 +95,7 @@ export default {
         },
         handlerCloseDialog : function() {
             this.diaConpanyInfoVisible = false;
-            this.$emit("ReloadCompanyList");
+            //this.$emit("ReloadCompanyList");
         },
         handlerEdit: function(item) {
             this.diaInitData = item;

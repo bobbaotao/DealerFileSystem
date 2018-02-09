@@ -2,8 +2,8 @@
   <div class="container">
        <el-row class="smallRow">
             <el-col :offset="1" :span="12">
-                <el-button size="small" :disabled="IsEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
-                <el-button size="small" :disabled="!IsEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
+                <el-button size="small" :disabled="IsEdit || !isAllowEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
+                <el-button size="small" :disabled="!IsEdit || !isAllowEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
                 <el-button size="small" v-on:click="returnToLastNav">Return</el-button>
             </el-col>
         </el-row>
@@ -109,11 +109,20 @@
                 </el-row>
                 <el-row class="tinyRow">
                     <el-col class="colTitle" :span="4">
-                        Glory Record<br />荣誉记录
+                        Glory Record<br />荣誉记录<br />
+                        <el-button type="primary" size="mini" :disabled="!IsEdit" v-on:click="AddNewGR">新增荣誉</el-button>
                     </el-col>
-                    <el-col class="colValue" :span="18"> 
+                    <el-col  class="colValue" :span="18">
+                        <el-row v-for="grItem in this.GloryRecordList" class="grRow">
+                            <el-col>
+                                <el-input :disabled="!IsEdit" v-model="grItem.value" size="mini"></el-input>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                    <!--<el-col class="colValue" :span="18"> 
                         <el-input :disabled="!IsEdit" type="textarea" :autosize="{ minRows: 2, maxRows: 9}" v-model="Glory_Record"></el-input>
                     </el-col>
+                    -->
                 </el-row>
                 <el-row class="tinyRow">
                     <el-col class="colTitle" :span="4">
@@ -164,6 +173,7 @@
 <script>
 import Utility from '../utility/index';
 import { Loading } from 'element-ui';
+import trim from 'trim'
 var array = require('array');
 
 export default {
@@ -206,10 +216,12 @@ export default {
             ContractDocFileList: [],
 
             CertUploadDisable: false,
-            CertFileList: []
+            CertFileList: [],
+            
+            GloryRecordList: [{value: ""}]
         }
     },
-    props: ['Status','initData','dealerID','refreshKey'],
+    props: ['Status','initData','dealerID','refreshKey', 'isAllowEdit'],
     created: function() {
         this.setInitValue(this.initData);
     },
@@ -238,6 +250,9 @@ export default {
         FileDownLoad: function(file) {
             var url = file.url;
             window.open(url);
+        },
+        AddNewGR: function() {
+            this.GloryRecordList.push({value: ""});
         },
         ContractDocFileUploadFailed: function(err, file, fileList) {
             this.HideLoadingView();
@@ -359,6 +374,16 @@ export default {
             });
         },
         buildServerData: function () {
+            var grData = "";
+            if(this.GloryRecordList && this.GloryRecordList.length > 0)
+            {
+                for(var index in this.GloryRecordList) {
+                    if(this.GloryRecordList[index] && trim(this.GloryRecordList[index].value) != "") 
+                    {
+                        grData = grData + this.GloryRecordList[index].value + Utility.grSplitkey;
+                    }
+                }
+            }
             var result = {
                 id: this.id,
                 dealer_id : this.dealerID,
@@ -373,7 +398,7 @@ export default {
                 Distribution_Area: this.Distribution_Area,
                 Exceptions_Hosptial: this.Exceptions_Hosptial,
                 AfterSales_SvcAgreement: this.AfterSales_SvcAgreement,
-                Glory_Record: this.Glory_Record,
+                Glory_Record: grData,
                 FileID_DealerAgreement: this.FileID_DealerAgreement,
                 FileID_DealerCA: this.FileID_DealerCA,
                 Remark: this.Remark,
@@ -410,6 +435,19 @@ export default {
                 this.IsHave_AppSvcAgr = data.IsHave_AppSvcAgr;
                 this.ContractDocFileList = this.loadFileList(data.FileID_DealerAgreement);
                 this.CertFileList = this.loadFileList(data.FileID_DealerCA);
+                if(data.Glory_Record) {
+                    var tempList = [];
+                    var grTempList = data.Glory_Record.split(Utility.grSplitkey);
+                    for(var index in grTempList) {
+                        if(grTempList[index] != "")
+                        {
+                            tempList.push({value: grTempList[index]});
+                        }
+                    }
+                    this.GloryRecordList = tempList;
+                } else {
+                    this.GloryRecordList = [{value: ""}];
+                }
             } else {
                 this.id = -1;
                 this.Year = null;
@@ -432,6 +470,7 @@ export default {
                 this.IsHave_AppSvcAgr = false,
                 this.ContractDocFileList = [];
                 this.CertFileList = [];
+                this.GloryRecordList = [{value: ""}];
             }
         },
         loadFileList: function(fileIds) {
@@ -493,6 +532,9 @@ export default {
 }
 .miniSelector {
     width: 80px;
+}
+.grRow {
+    padding: 3px 0px 3px 0px;
 }
 </style>
 

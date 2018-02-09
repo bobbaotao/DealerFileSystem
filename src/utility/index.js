@@ -6,6 +6,7 @@ module.exports = {
     dfServiceUrl: '/_vti_bin/Zeiss.SpotDealer/DealerFileService.svc',
     fileServiceUrl: '../FileHandler.ashx',
     cdServiceUrl: "/_vti_bin/Zeiss.SpotDealer/DealerService.svc", //contract dealer svc url 
+    grSplitkey: '#befaa348-78c1-4d67-b15d-bd6caa342b80#', //this is a key for split the gr in contract
     formatDateToString: function(dateObj) {
         if (dateObj == null) {
             return "";
@@ -91,24 +92,24 @@ module.exports = {
     },
     loadRecommendedList: function() {
         return [{
-            label: "Temp1",
-            value: "Temp1"
+            label: "达标, 续签下一年经销商协议",
+            value: "Archived"
         }, {
-            label: "Temp2",
-            value: "Temp2"
+            label: "未达标, 不再续约",
+            value: "NotArchived"
         }, {
-            label: "Temp3",
-            value: "Temp3"
+            label: "未完成全年任务60%, 给予半年考察期",
+            value: "Over60"
         }];
     },
     loadDefaultRecommendText: function(status) {
         switch (status) {
-            case "Temp1":
-                return "Temp1 Temp1 Temp1 Temp1";
-            case "Temp2":
-                return "Temp2 Temp2 Temp2 Temp2";
-            case "Temp3":
-                return "Temp3 Temp3 Temp3 Temp3";
+            case "Archived":
+                return "续签下一年经销商协议";
+            case "NotArchived":
+                return "不再续约";
+            case "Over60":
+                return "给予半年考察期";
             default:
                 return "";
         }

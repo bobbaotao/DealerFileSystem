@@ -92,7 +92,7 @@
             </el-col>
         </el-row>
         <el-dialog title="Achievement History" :visible.sync="dialogAchItemVisable" :fullscreen="true">
-            <AchievementPage :refreshKey="refreshKey" :dealerID="dealerID" :Status="achViewStatus"
+            <AchievementPage :refreshKey="refreshKey" :dealerID="dealerID" :Status="achViewStatus" :isAllowEdit="isAllowEdit"
                     :initData="achViewInitData" v-on:close="handlerDialogClose" v-on:refresh="handlerRefersh">
             </AchievementPage>
         </el-dialog>

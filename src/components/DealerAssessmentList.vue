@@ -49,10 +49,9 @@
                 </el-table>
             </el-col>
         </el-row>
-        <el-dialog title="Dealer Assessment" :visible.sync="DialogAssessmentVisible"  
-            v-on:close="reloadAssessmentList" :fullscreen="true">
+        <el-dialog title="Dealer Assessment" :visible.sync="DialogAssessmentVisible" :fullscreen="true">
             <DealerAssessmentPage :initData="assessmentDiaData" :refreshKey="refreshKey" :dealerID="dealerID"
-                v-on:close="dialogClose">
+               :isAllowEdit="isAllowEdit" v-on:close="dialogClose" v-on:reloadAssessmentList="reloadAssessmentList">
             </DealerAssessmentPage>
         </el-dialog>
         <!-- <el-dialog title="Choose A Contract" :visible.sync="DialogSelectContract" >
@@ -76,7 +75,7 @@ export default {
     name: "DealerAssessmentList",
     data () {
         return {
-            isHide: false,
+            isHide: true,
             DialogAssessmentVisible: false,
 
             refreshKey: 0,
@@ -171,6 +170,7 @@ export default {
         },
         dialogClose: function() {
             this.DialogAssessmentVisible = false;
+            //this.$emit("ReloadAssessmentList");  
         },
         reloadAssessmentList: function() {
             this.$emit("ReloadAssessmentList");   

@@ -2,8 +2,8 @@
     <div>
         <el-row class="smallRow">
             <el-col>
-                <el-button :disabled="IsEdit" v-on:click="IsEdit = true">Edit</el-button>
-                <el-button :disabled="!IsEdit" v-on:click="saveValueToServer">Save</el-button>
+                <el-button :disabled="IsEdit || !isAllowEdit" v-on:click="IsEdit = true" >Edit</el-button>
+                <el-button :disabled="!IsEdit || !isAllowEdit" v-on:click="saveValueToServer">Save</el-button>
                 <el-button v-on:click="returnToLastNav">Return</el-button>
             </el-col>
         </el-row>
@@ -11,7 +11,7 @@
             <el-col>
                 <el-row class="smallRow">
                     <el-col :span="2" class="smallCell">
-                        <el-select size="mini" :disabled="formStatus != 'NEW'" v-model="selectedYear">
+                        <el-select size="mini" :disabled="formStatus != 'NEW' || !IsEdit || !isAllowEdit" v-model="selectedYear">
                             <el-option v-for="item in yearList" :key="item.value" 
                                 :label="item.label" :value="item.value"></el-option>
                         </el-select>
@@ -269,7 +269,7 @@
                             &nbsp;{{Total_TargetNum}}
                         </span>
                     </el-col>
-                    <el-col  class="smallCell":span="3">
+                    <el-col  class="smallCell" :span="3">
                        <span>
                            &nbsp;{{Total_SalesNum}}
                        </span>
@@ -405,7 +405,7 @@ export default {
             formStatus: "NEW"
         }
     },
-    props: ['Status','initData','dealerID','refreshKey'],
+    props: ['Status','initData','dealerID','refreshKey', 'isAllowEdit'],
     computed: {
             Q1_FinishRate: function() {
                 if(this.Q1_TargetNum && this.Q1_TargetNum > 0) {

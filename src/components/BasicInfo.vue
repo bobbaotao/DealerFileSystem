@@ -119,9 +119,9 @@
                         Appointed Products<br />
                         指定商品
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="18"  class="colValue">
                         <el-input v-model="Appointed_Products"  type="textarea" :autosize="{ minRows: 2, maxRows: 9}"
-                             :disabled="!isEdit" size="mini"></el-input>
+                             :disabled="!isEdit"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="middleRow">
@@ -129,9 +129,9 @@
                         Distribution Area<br />
                         代理区域
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="18"  class="colValue">
                         <el-input v-model="Distribution_Area" type="textarea" :autosize="{ minRows: 2, maxRows: 9}"
-                            :disabled="!isEdit" size="mini"></el-input>
+                            :disabled="!isEdit"></el-input>
                     </el-col>
                 </el-row>
                 <el-row class="middleRow">
@@ -152,14 +152,14 @@
                         <el-input-number v-model="signCount" :disabled="true" :min="0" size="mini"></el-input-number>
                     </el-col>
                 </el-row>
-                <el-row class="middleRow">
+                <el-row class="miniRow">
                     <el-col class="colTitle" :span="4">
                         Remark<br />
                         备注说明
                     </el-col>
-                    <el-col :span="18">
+                    <el-col :span="18"  class="colValue">
                         <el-input v-model="Remark" :disabled="!isEdit" type="textarea" 
-                        :autosize="{ minRows: 2, maxRows: 9}" size="mini"></el-input>
+                        :autosize="{ minRows: 2, maxRows: 9}"></el-input>
                     </el-col>
                 </el-row>
             </el-col>
@@ -294,6 +294,12 @@ export default {
 }
 .middleSelector {
     width: 250px;
+}
+.miniRow {
+    padding: 3px 0px 3px 0px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 20px;
 }
 </style>
 

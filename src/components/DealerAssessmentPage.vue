@@ -1,13 +1,18 @@
 <template>
-    <div class="DAPContainer">
-        <el-row class="smallRow">
-            <el-col>
-                <el-button size="small" :disabled="IsEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
-                <el-button size="small" :disabled="!IsEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
-                <el-button size="small" v-if="WF_Status && WF_Status == '1'"
-                    :disabled="IsEdit" type="primary" v-on:click="startWF">Start Assessment Process</el-button>
+    <div class="DAPContainer" >
+        <el-row class="smallRow" v-if="!IsTaskPage">
+            <el-col :span="18">
+                <el-button size="small" :disabled="IsEdit || !isAllowEdit" type="primary" 
+                    v-on:click="IsEdit = true">Edit</el-button>
+                <el-button size="small" :disabled="!IsEdit || !isAllowEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
+                <el-button size="small" :disabled="IsEdit || !IsAllowStartWF" type="primary" 
+                    v-on:click="startWF">Start Assessment Process</el-button>
                 <el-button size="small" v-on:click="returnToLastNav">Return</el-button>
             </el-col>
+           <!-- <el-col :span="6">
+                <el-button size="small"  v-on:click="DoPrint">Print</el-button>
+            </el-col>
+            -->
         </el-row>
         <el-row class="smallRow"> 
             <el-col>
@@ -21,6 +26,18 @@
                         <el-select size="mini" class="smallSelector" :disabled="!IsEdit" v-model="Year">
                             <el-option v-for="item in yearList" :key="item.value" 
                                 :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-col>
+                </el-row>
+                <el-row class="tinyRow">
+                    <el-col class="colTitle" :span="4">
+                        Sales Region
+                    </el-col>
+                    <el-col class="colValue"  :span="8">
+                        <!-- <el-input v-model="SalesRegion" :disabled="!isEdit" size="mini"></el-input> -->
+                        <el-select size="mini" :disabled="!IsEdit" class="middleSelector" v-model="SalesRegion">
+                          <el-option v-for="item in SRList" :key="item" 
+                            :label="item" :value="item"></el-option>
                         </el-select>
                     </el-col>
                 </el-row>
@@ -183,16 +200,28 @@
                                 In percent
                             </el-col>
                             <el-col :span="5">
-                                {{LastYearPercent1}}
+                                <el-input v-model="LastYearPercent1" :disabled="!IsEdit" 
+                                    class="colWidthMini" size="mini">
+                                    <template slot="append">%</template>
+                                </el-input>
                             </el-col>
                             <el-col :span="5">
-                                {{LastYearPercent2}}
+                                <el-input v-model="LastYearPercent2" :disabled="!IsEdit" 
+                                    class="colWidthMini"  size="mini">
+                                    <template slot="append">%</template>
+                                </el-input>
                             </el-col>
                             <el-col :span="5">
-                                {{LastYearPercent3}}
+                                <el-input v-model="LastYearPercent3" :disabled="!IsEdit" 
+                                    class="colWidthMini"  size="mini">
+                                    <template slot="append">%</template>
+                                </el-input>
                             </el-col>
                             <el-col :span="5">
-                                {{LastYearPercent4}}
+                                <el-input v-model="LastYearPercent4" :disabled="!IsEdit" 
+                                    class="colWidthMini"  size="mini">
+                                    <template slot="append">%</template>
+                                </el-input>
                             </el-col>
                         </el-row>
                     </el-col>
@@ -231,6 +260,12 @@
                 </el-row>
             </el-col>
         </el-row>
+        <el-row class="smallRow">
+            <ApprovalView v-bind:ApprovalInfos="ApprovalInfo" v-bind:taskID="curTaskID" 
+                v-on:ReloadTask="LoadTasks">
+            </ApprovalView>
+        </el-row>
+       
     </div>
 </template>
 
@@ -238,6 +273,7 @@
 import Utility from '../utility/index';
 import { Loading } from 'element-ui';
 import ZeissPeoplePicker from './ZeissPeoplePicker'
+import ApprovalView from './ApprovalView'
 
 export default {
     name: "DealerAssessmentPage",
@@ -273,6 +309,14 @@ export default {
             ACZT_Points: null,
             ACZT_Weight: null,
             Overall_AS: null,
+
+            STA_Sum: 0,
+            RPR_Sum: 0,
+            NDSE_Sum: 0,
+            NCSE_Sum: 0,
+            ACZT_Sum: 0,
+            Sum_Score: 0,
+
             Recommendation: null,
             Recommendation_Status: null,
             WF_Status: null,
@@ -281,17 +325,40 @@ export default {
             SignedControlling_Account: null,
             SignedControlling_Name: null,
             SignedControlling_DateTime: null,
+            SalesRegion: null,
+            LastYearPercent1: null,
+            LastYearPercent2: null,
+            LastYearPercent3: null,
+            LastYearPercent4: null,
+
+            ApprovalInfo: null,
+            curTaskID: null,
 
             IsProbation: false,
-            IsDeleted: false
+            IsDeleted: false,
+            IsAllowStartWF: false,
+
+            SRList: null,
+            IsTaskPage: false,
+
+            LastYearText1: "NA",
+            LastYearText2: "NA",
+            LastYearText3: "NA",
+            LastYearText4: "NA"
 
         }
     },
-    props: ['initData','dealerID','refreshKey'],
+    props: ['initData','dealerID','refreshKey', 'taskID', 'isAllowEdit'],
     components: {
-        ZeissPeoplePicker
+        ZeissPeoplePicker,
+        ApprovalView
     },
     created () {
+        if(this.taskID) {
+            this.IsTaskPage = true;
+            this.IsEdit = false;
+            this.curTaskID = this.taskID;
+        }
         this.setInitData(this.initData);
     },
     watch: {
@@ -302,122 +369,121 @@ export default {
             }
         },
         initData: function(newValue) {
-            this.setInitData(newValue);
+            //this.setInitData(newValue);
         },
         refreshKey: function(newKey) {
             this.setInitData(this.initData);
+        },
+        taskID: function(newValue) {
+            if(this.taskID) 
+            {
+                this.IsTaskPage = true;
+                this.IsEdit = false;
+                this.curTaskID = this.taskID;
+            }
+        },
+        STA_Points: function(newValue) {
+            this.DoCalculate();
+        },
+        RPR_Points: function(newValue) {
+            this.DoCalculate();
+        },
+        NDSE_Points: function(newValue) {
+            this.DoCalculate();
+        },
+        NCSE_Points: function(newValue) {
+            this.DoCalculate();
+        },
+        ACZT_Points: function(newValue) {
+            this.DoCalculate();
+        },
+        Year: function(newValue) {
+            if(this.Year && this.Year != '') {
+               this.LastYearText1 = Utility.getPastedFYText(this.Year, 1);
+            } else {
+                this.LastYearText1 = "NA";
+            }
+            
+            if(this.Year && this.Year != '') {
+               this.LastYearText2 = Utility.getPastedFYText(this.Year, 2);
+            } else {
+                this.LastYearText2 = "NA";
+            }
+
+            if(this.Year && this.Year != '') {
+               this.LastYearText3 = Utility.getPastedFYText(this.Year, 3);
+            } else {
+                this.LastYearText3 = "NA";
+            }
+
+            if(this.Year && this.Year != '') {
+               this.LastYearText4 = Utility.getPastedFYText(this.Year, 4);
+            } else {
+                this.LastYearText4 = "NA";
+            }
         }
     },
     computed: {
-        STA_Sum: function() {
-            if(this.STA_Points && this.STA_Points > 0) {
-                return this.STA_Points * this.STA_Weight / 100;
-            }
-            return 0;
-        },
-        RPR_Sum: function() {
-            if(this.RPR_Points && this.RPR_Points > 0) {
-                return this.RPR_Points * this.RPR_Weight / 100;
-            }
-            return 0;
-        },
-        NDSE_Sum: function() {
-            if(this.NDSE_Points && this.NDSE_Points > 0) {
-                return this.NDSE_Points * this.NDSE_Weight / 100;
-            }
-            return 0;
-        },
-        NCSE_Sum: function() {
-            if(this.NCSE_Points && this.NCSE_Points > 0) {
-                return this.NCSE_Points * this.NCSE_Weight / 100;
-            }
-            return 0;
-        },
-        ACZT_Sum: function() {
-            if(this.ACZT_Points && this.ACZT_Points > 0) {
-                return this.ACZT_Points * this.ACZT_Weight / 100;
-            }
-            return 0;
-        },
-        Sum_Score: function() {
-            //javascript float type count!!! this is a stupid issue
-            var sum = Math.round(this.STA_Sum * 100) + Math.round(this.RPR_Sum * 100) +
-             Math.round(this.NDSE_Sum * 100) + Math.round(this.NCSE_Sum * 100) + Math.round(this.ACZT_Sum * 100);
-            return sum;
-        },
-        LastYearText1: function() {
-            if(this.Year && this.Year != '') {
-              return  Utility.getPastedFYText(this.Year, 1);
-            }
-            return "NA";
-        },
-        LastYearText2: function() {
-            if(this.Year && this.Year != '') {
-              return  Utility.getPastedFYText(this.Year, 2);
-            }
-            return "NA";
-        },
-        LastYearText3: function() {
-            if(this.Year && this.Year != '') {
-              return  Utility.getPastedFYText(this.Year, 3);
-            }
-            return "NA";
-        },
-        LastYearText4: function() {
-            if(this.Year && this.Year != '') {
-              return  Utility.getPastedFYText(this.Year, 4);
-            }
-            return "NA";
-        },
-        LastYearPercent1: function() {
-            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
-                var pastedYear = (new Number(this.Year) - 1).toString();
-                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
-
-                if(pastScore && pastScore > 0) {
-                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
-                    return (pecent_100 / 100).toString() + "%";
-                }
-            }
-            return "NA";
-        },
-        LastYearPercent2: function() {
-            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
-                var pastedYear = (new Number(this.Year) - 2).toString();
-                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
-
-                if(pastScore && pastScore > 0) {
-                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
-                    return (pecent_100 / 100).toString() + "%";
-                }
-            }
-            return "NA";
-        },
-        LastYearPercent3: function() {
-            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
-                var pastedYear = (new Number(this.Year) - 3).toString();
-                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
-
-                if(pastScore && pastScore > 0) {
-                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
-                    return (pecent_100 / 100).toString() + "%";
-                }
-            }
-            return "NA";
-        },
-        LastYearPercent4: function() {
-            if(this.Year && this.Year != '' && this.Sum_Score && this.Sum_Score > 0) {
-                var pastedYear = (new Number(this.Year) - 4).toString();
-                var pastScore = this.$store.getters.loadAssessmentASScoreByYear(pastedYear);
-
-                if(pastScore && pastScore > 0) {
-                    var pecent_100 =  Math.round(this.Sum_Score * 10000 / pastScore);
-                    return (pecent_100 / 100).toString() + "%";
-                }
-            }
-            return "NA";
-        }
-
+        // STA_Sum: function() {
+        //     if(this.STA_Points && this.STA_Points > 0) {
+        //         return this.STA_Points * this.STA_Weight / 100;
+        //     }
+        //     return 0;
+        // },
+        // RPR_Sum: function() {
+        //     if(this.RPR_Points && this.RPR_Points > 0) {
+        //         return this.RPR_Points * this.RPR_Weight / 100;
+        //     }
+        //     return 0;
+        // },
+        // NDSE_Sum: function() {
+        //     if(this.NDSE_Points && this.NDSE_Points > 0) {
+        //         return this.NDSE_Points * this.NDSE_Weight / 100;
+        //     }
+        //     return 0;
+        // },
+        // NCSE_Sum: function() {
+        //     if(this.NCSE_Points && this.NCSE_Points > 0) {
+        //         return this.NCSE_Points * this.NCSE_Weight / 100;
+        //     }
+        //     return 0;
+        // },
+        // ACZT_Sum: function() {
+        //     if(this.ACZT_Points && this.ACZT_Points > 0) {
+        //         return this.ACZT_Points * this.ACZT_Weight / 100;
+        //     }
+        //     return 0;
+        // },
+        // Sum_Score: function() {
+        //     //javascript float type count!!! this is a stupid issue
+        //     var sum = Math.round(this.STA_Sum * 100) + Math.round(this.RPR_Sum * 100) +
+        //      Math.round(this.NDSE_Sum * 100) + Math.round(this.NCSE_Sum * 100) + Math.round(this.ACZT_Sum * 100);
+        //     return sum;
+        // },
+        // LastYearText1: function() {
+        //     if(this.Year && this.Year != '') {
+        //       return  Utility.getPastedFYText(this.Year, 1);
+        //     }
+        //     return "NA";
+        // },
+        // LastYearText2: function() {
+        //     if(this.Year && this.Year != '') {
+        //       return  Utility.getPastedFYText(this.Year, 2);
+        //     }
+        //     return "NA";
+        // },
+        // LastYearText3: function() {
+        //     if(this.Year && this.Year != '') {
+        //       return  Utility.getPastedFYText(this.Year, 3);
+        //     }
+        //     return "NA";
+        // },
+        // LastYearText4: function() {
+        //     if(this.Year && this.Year != '') {
+        //       return  Utility.getPastedFYText(this.Year, 4);
+        //     }
+        //     return "NA";
+        // }
     },
     methods: {
         ShowLoadingView: function() {
@@ -427,8 +493,51 @@ export default {
             let curLoadingInstance = Loading.service({ fullscreen: true });
             curLoadingInstance.close();
         },
+        DoCalculate: function() {
+            if(this.STA_Points && this.STA_Points > 0) {
+                this.STA_Sum = this.STA_Points * this.STA_Weight / 100;
+            } else {
+                this.STA_Sum = 0;
+            }
+            
+            if(this.RPR_Points && this.RPR_Points > 0) {
+                this.RPR_Sum =  this.RPR_Points * this.RPR_Weight / 100;
+            } else {
+                this.RPR_Sum = 0;
+            }
+
+            if(this.NDSE_Points && this.NDSE_Points > 0) {
+                this.NDSE_Sum =  this.NDSE_Points * this.NDSE_Weight / 100;
+            } else {
+                this.NDSE_Sum = 0;
+            }
+
+            if(this.NCSE_Points && this.NCSE_Points > 0) {
+                this.NCSE_Sum =  this.NCSE_Points * this.NCSE_Weight / 100;
+            } else {
+                this.NCSE_Sum = 0;
+            }
+
+            if(this.ACZT_Points && this.ACZT_Points > 0) {
+                this.ACZT_Sum =  this.ACZT_Points * this.ACZT_Weight / 100;
+            } else {
+                this.ACZT_Sum = 0;
+            }
+
+            var sum = Math.round(this.STA_Sum * 100) + Math.round(this.RPR_Sum * 100) +
+             Math.round(this.NDSE_Sum * 100) + Math.round(this.NCSE_Sum * 100) + Math.round(this.ACZT_Sum * 100);
+            this.Sum_Score = sum;
+        },
+        DoPrint: function() {
+            var printPageUrl = "./index.html#/AssessmentPrintView/" + this.dealerID + "/" + this.id;
+            window.open(printPageUrl);
+        },
         saveValueToServer: function() {
             //TODO
+            if(!this.validateLYPAsNUM())
+            {
+                return;
+            }
             var requestData = {
                 data: this.buildServerData()
             };
@@ -441,6 +550,7 @@ export default {
                    response.data.SaveAssessmentResult.Status == "success") {
                        this.$message("Save Success!");
                        this.IsEdit = false;
+                       this.$emit("reloadAssessmentList");
                    } else if(response.data && response.data.SaveAssessmentResult) {
                        this.$message.error(response.data.SaveAssessmentResult.Message);
                    } else {
@@ -497,6 +607,27 @@ export default {
                     this.ACZT_Weight = 5;
                 }
 
+                if(data.LastYearPercent1) {
+                    this.LastYearPercent1 = (data.LastYearPercent1 * 0.01).toString();
+                } else {
+                    this.LastYearPercent1 = "NA";
+                }
+                if(data.LastYearPercent2) {
+                    this.LastYearPercent2 = (data.LastYearPercent2 * 0.01).toString();
+                } else {
+                    this.LastYearPercent2 = "NA";
+                }
+                if(data.LastYearPercent3) {
+                    this.LastYearPercent3 = (data.LastYearPercent3 * 0.01).toString();
+                } else {
+                    this.LastYearPercent3 = "NA";
+                }
+                if(data.LastYearPercent4) {
+                    this.LastYearPercent4 = (data.LastYearPercent4 * 0.01).toString();
+                } else {
+                    this.LastYearPercent4 = "NA";
+                }
+
                 this.Overall_AS = data.Overall_AS;
                 this.WF_Status = data.WF_Status;
                 this.SignedSales_Account = data.SignedSales_Account;
@@ -509,9 +640,45 @@ export default {
                 this.Recommendation = data.Recommendation;
                 this.Recommendation_Status = data.Recommendation_Status;
 
+                //this.DoCalculate();
+                this.LoadTasks();
+                this.LoadSRList();
             } else {
                 //To do, should all have data
             }
+        },
+        LoadTasks: function() {
+            if(this.taskID) {
+                this.LoadWFInfoWithTaskFromServer();
+            } else {
+                 this.LoadWFInfoFromServer();
+            }
+        },
+        LoadSRList: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadSRList/" + this.dealerID;
+            
+            this.axios.post(requestUrl).then((rep) => {
+                if(rep.data && rep.data.LoadSRListResult && rep.data.LoadSRListResult.Status == "success") {
+                    this.SRList = rep.data.LoadSRListResult.Data;
+                } else if (rep.data && rep.data.LoadSRListResult) {
+                    this.$message.error(rep.data.LoadSRListResult.Message);
+                } else {
+                    this.$message.error("Load Sales region failed!");
+                }
+            }).catch((error) => {
+                this.$message.error("Load Sales region failed!");
+                this.SRList = null;
+            });
+        },
+        LoadLastYearPersent: function(value) {
+            if(value) {
+                var numValue = new Number(value);
+                if(isNaN(numValue)) {
+                    return null;
+                }
+                return Math.round(numValue * 100);
+            }
+            return null;
         },
         buildServerData: function() {
             var salesAccount = this.$refs.picPicker.userAccount;
@@ -543,12 +710,69 @@ export default {
                 Recommendation: this.Recommendation,
                 Recommendation_Status: this.Recommendation_Status,
                 SignedSales_Account: salesAccount,
-                SignedSales_Name: salesName
+                SignedSales_Name: salesName,
+                LastYearPercent1: this.LoadLastYearPersent(this.LastYearPercent1),
+                LastYearPercent2: this.LoadLastYearPersent(this.LastYearPercent2),
+                LastYearPercent3: this.LoadLastYearPersent(this.LastYearPercent3),
+                LastYearPercent4: this.LoadLastYearPersent(this.LastYearPercent4)
             };
             return result;
         },
         returnToLastNav: function() {
             this.$emit("close");
+        },
+        LoadWFInfoFromServer: function() {
+            var requestURL = Utility.dfServiceUrl + "/LoadWFInfo/" + this.dealerID + "/" + this.id;
+            //reset status
+            this.ApprovalInfo = null;
+            this.curTaskID = null;
+            this.IsAllowStartWF = null;
+            //this.ShowLoadingView();
+
+            this.axios.post(requestURL).then((rep) => {
+                //this.HideLoadingView();
+
+                if(rep.data && rep.data.LoadWFInfoResult && rep.data.LoadWFInfoResult.Status == "success") 
+                {
+                    this.ApprovalInfo = rep.data.LoadWFInfoResult.Data;
+                    this.curTaskID = this.ApprovalInfo.curTaskID;
+                    this.IsAllowStartWF = this.ApprovalInfo.IsAllowStartWF;
+                } else if(rep.data && rep.data.LoadWFInfoResult) {
+                    this.$message.error(rep.data.LoadWFInfoResult.Message);
+                } else {
+                    this.$message.error("load WF Info failed!");
+                }
+            }).catch((error) => {
+                //this.HideLoadingView();
+                this.$message.error("load WF Info failed!");
+            });
+        },
+        LoadWFInfoWithTaskFromServer: function() {
+            var requestUrl = Utility.dfServiceUrl + "/LoadWFInfoWithTask/" + this.dealerID + "/" 
+                    + this.id + "/" + this.taskID;
+            //reset status
+            this.ApprovalInfo = null;
+            this.curTaskID = null;
+            this.IsAllowStartWF = null;
+            //this.ShowLoadingView();
+
+            this.axios.post(requestUrl).then((rep) => {
+                //this.HideLoadingView();
+
+                if(rep.data && rep.data.LoadWFInfoWithTaskResult &&
+                    rep.data.LoadWFInfoWithTaskResult.Status == "success") {
+                        this.ApprovalInfo = rep.data.LoadWFInfoWithTaskResult.Data;
+                        this.curTaskID = this.ApprovalInfo.curTaskID;
+                        this.IsAllowStartWF = this.ApprovalInfo.IsAllowStartWF;
+                    } else if (rep.data && rep.data.LoadWFInfoWithTaskResult) {
+                        this.$message.error(rep.data.LoadWFInfoWithTaskResult.Message);
+                    } else {
+                        this.$message.error("Load Approval Info failed!");
+                    }
+            }).catch((error) => {
+                //this.HideLoadingView();
+                this.$message.error("Load Approval Info failed!");
+            });
         },
         startWF: function() {
             if(this.validateIfCanStartWF()) {
@@ -560,6 +784,7 @@ export default {
                     if(response.data && response.data.StartAssessmentWFResult 
                         && response.data.StartAssessmentWFResult.Status == "success") {
                             this.WF_Status = "2";
+                            this.$emit("reloadAssessmentList");
                             this.$message("Process Start Success!");
                         } else if(response.data && response.data.StartAssessmentWFResult) {
                             this.$message.error(response.data.StartAssessmentWFResult.Message);
@@ -573,6 +798,37 @@ export default {
                 });
             }
         },
+        validateLYPAsNUM: function() {
+            if(this.LastYearPercent1  && this.LastYearPercent1.toUpperCase() != "NA") {
+                var numLastYearPercent1 = new Number(this.LastYearPercent1);
+                if(isNaN(numLastYearPercent1)) {
+                    this.$message.error("Last Year in percent shoule be number!");
+                    return false;
+                }
+            }
+            if(this.LastYearPercent2 && this.LastYearPercent2.toUpperCase() != "NA") {
+                var numLastYearPercent2 = new Number(this.LastYearPercent2);
+                if(isNaN(numLastYearPercent2)) {
+                    this.$message.error("Last Year in percent shoule be number!");
+                    return false;
+                }
+            }
+            if(this.LastYearPercent3 && this.LastYearPercent3.toUpperCase() != "NA") {
+                var numLastYearPercent3 = new Number(this.LastYearPercent3);
+                if(isNaN(numLastYearPercent3)) {
+                    this.$message.error("Last Year in percent shoule be number!");
+                    return false;
+                }
+            }
+            if(this.LastYearPercent4 && this.LastYearPercent4.toUpperCase() != "NA") {
+                var numLastYearPercent4 = new Number(this.LastYearPercent4);
+                if(isNaN(numLastYearPercent4)) {
+                    this.$message.error("Last Year in percent shoule be number!");
+                    return false;
+                }
+            }
+            return true;
+        },
         validateIfCanStartWF: function() {
             if(!this.DealerName || this.DealerName == "") {
                 this.$message.error("Dealer name is empty!");
@@ -583,7 +839,7 @@ export default {
                 return false;
             }
             if(!this.BU || this.BU == "") {
-                this.$message.error("BU is empty!");
+                this.$message.error("BG is empty!");
                 return false;
             }
             if(!this.Sum_Score || this.Sum_Score == "" || this.Sum_Score == "NA" || this.Sum_Score== 0) {
@@ -607,7 +863,7 @@ export default {
                 this.$message.error("WF is running!");
                 return false;
             }
-            return true;
+            return this.validateLYPAsNUM();
         }
     }
 }
@@ -638,5 +894,98 @@ export default {
 .colValue {
     padding-left: 10px;
 }
+.colWidthMini {
+    width: 160px;
+}
+
+/* print */
+/* .printContainer{
+    visibility:hidden;
+    width: 800px;
+    margin: 10px auto;
+}
+.row {
+    width: 800px;
+    display: block;
+    margin:  0px;
+    padding: 10px 0px 10px 0px;
+    border: 0px;
+    text-align: left;
+}
+.row2 {
+    width: 800px;
+    display: block;
+    margin: 0px;
+    padding: 3px 0px 3px 0px;
+    border: 0px;
+    text-align: left;
+}
+.titleRow {
+    width: 800px;
+    display: block;
+    margin: 35px 0px;
+    padding: 0px;
+    border: 0px;
+    font-size: 20px;
+}
+.colTitle1 {
+    padding: 0px;
+    width: 120px;
+    margin: 0px;
+    border: 0px;
+    display: inline-block;
+}
+.colTitle2 {
+    padding: 0px;
+    width: 280px;
+    margin: 0px;
+    border: 0px;
+    display: inline-block;
+}
+.colTitle3 {
+    padding: 0px;
+    width: 240px;
+    margin: 0px;
+    border: 0px;
+    display: inline-block;
+}
+.colTitle4 {
+    padding: 0px;
+    width: 320px;
+    margin: 0px;
+    border: 0px;
+    display: inline-block;
+}
+.colValue1 {
+    padding: 0px;
+    width: 260px;
+    margin: 0px 0px 0px 10px ;
+    border: 0px;
+    display: inline-block;
+}
+.colValue2 {
+    padding: 0px;
+    width: 660px;
+    margin: 0px 0px 0px 10px ;
+    border: 0px;
+    display: inline-block;
+}
+.colValue2_1 {
+    padding: 0px;
+    width: 140px;
+    margin: 0px 0px 0px 10px ;
+    border: 0px;
+    display: inline-block;
+}
+.colValue3_1 {
+    padding: 0px;
+    width: 120px;
+    margin: 0px 0px 0px 10px ;
+    border: 0px;
+    display: inline-block;
+}
+.bottomBorderLine {
+    border-bottom: 1px solid black;
+} */
 </style>
 

@@ -2,8 +2,8 @@
   <div class="divContainer">
       <el-row >
           <el-col :span="12" :offset="1">
-              <el-button size="tiny" v-on:click="handleSave" v-if="isInEdit">Save</el-button>
-              <el-button size="tiny" v-on:click="handleEdit" v-else>Edit</el-button>
+              <el-button size="tiny" :disabled="!isAllowEdit" v-on:click="handleSave" v-if="isInEdit">Save</el-button>
+              <el-button size="tiny" :disabled="!isAllowEdit" v-on:click="handleEdit" v-else>Edit</el-button>
           </el-col>
       </el-row>
       <el-row  class="SectionTitle">
@@ -14,25 +14,25 @@
       <el-row  class="SectionTitle">
           <el-col :span="22" :offset="1">
               <AchievementList v-on:reloadAchList="loadAchievementListFromServer" :dealerID="dealerId" 
-              :achListData="achList" :isAllowEdit="true"></AchievementList>
+              :achListData="achList" :isAllowEdit="isAllowEdit"></AchievementList>
           </el-col>
       </el-row>
        <el-row class="SectionTitle">
           <el-col :span="22" :offset="1">
               <ContractLogList v-on:reloadContractList="loadContractLogListFromServer" :dealerID="dealerId" 
-              :contractListData="contractList" :isAllowEdit="true"></ContractLogList>
+              :contractListData="contractList" :isAllowEdit="isAllowEdit"></ContractLogList>
           </el-col>
       </el-row>
       <el-row class="SectionTitle">
           <el-col :span="22" :offset="1">
               <DealerAssessmentList :dealerID="dealerId"  :assessmentList="assessmentList" :contractList="contractList"
-                :isAllowEdit="true" v-on:ReloadAssessmentList="loadAssessmentListFromServer"></DealerAssessmentList>
+                :isAllowEdit="isAllowEdit" v-on:ReloadAssessmentList="loadAssessmentListFromServer"></DealerAssessmentList>
           </el-col>
       </el-row>
       <el-row class="SectionTitle">
           <el-col :span="22" :offset="1">
               <CompanyInfoList v-on:ReloadCompanyList="loadCompanyInfoListFromServer" :dealerID="dealerId" 
-              :CompanyInfoDatas="companyList" :isAllowEdit="true" >
+              :CompanyInfoDatas="companyList" :isAllowEdit="isAllowEdit" >
               </CompanyInfoList>
           </el-col>
       </el-row>
@@ -61,7 +61,9 @@ export default {
             contractList: null,
             assessmentList: null,
             fileList: null,
-            picUserInfo: null
+            picUserInfo: null,
+            dpCheckResult: null,
+            isAllowEdit: false
         }
     },
     components: {BasicInfo, AchievementList,ContractLogList,CompanyInfoList,DealerAssessmentList},
@@ -111,6 +113,14 @@ export default {
                     this.fileList = responseData.dfFileAttachList;
                     this.picUserInfo = responseData.userInfoOfPIC;
                     this.assessmentList = responseData.dfAssessmentList;
+                    this.dpCheckResult = responseData.dpcr;
+                    if(this.dpCheckResult && (this.dpCheckResult.IsCoordinatorOfCurDealer  || 
+                    this.dpCheckResult.IsMasterOfCurDealer))
+                    {
+                        this.isAllowEdit = true;
+                    } else {
+                        this.isAllowEdit = false;
+                    }
 
                     this.$store.commit('initAttList',responseData.dfFileAttachList);
                     this.$store.commit('setSignCount', this.contractList? this.contractList.length : 0);

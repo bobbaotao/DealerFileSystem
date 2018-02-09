@@ -2,8 +2,8 @@
     <div>
         <el-row class="smallRow">
             <el-col :offset="1" :span="12">
-                <el-button size="small" :disabled="IsEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
-                <el-button size="small" :disabled="!IsEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
+                <el-button size="small" :disabled="IsEdit || !isAllowEdit" type="primary" v-on:click="IsEdit = true">Edit</el-button>
+                <el-button size="small" :disabled="!IsEdit || !isAllowEdit" type="primary" v-on:click="saveValueToServer">Save</el-button>
                 <el-button size="small" v-on:click="returnToLastNav">Return</el-button>
             </el-col>
         </el-row>
@@ -227,7 +227,7 @@ export default {
 
         }
     },
-    props: ['initData', 'dealerID', 'RefreshKey', 'Status'],
+    props: ['initData', 'dealerID', 'RefreshKey', 'Status', 'isAllowEdit'],
     watch: {
         Status: function(newValue) {
             if(newValue == "Generate") {
@@ -444,7 +444,7 @@ export default {
                         this.$message("Save Success!");
                         this.IsEdit = false;
                         this.formStatus = "UPDATE";
-                        this.$emit("refresh");
+                        this.$emit("Refersh");
                     } else if (response.data && response.data.SaveCompanyInfoResult) {
                         this.$message.error(response.data.SaveCompanyInfoResult.Message);
                     } else {

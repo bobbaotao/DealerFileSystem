@@ -92,7 +92,10 @@
         checkName: function() {
             this.axiosCancelSource.cancel();
             if(this.selectedUser == null || this.selectedUser == '') {
-            return;
+                this.userAccount = '';
+                this.username = '';
+                this.email = '';
+                return;
             }
             var requestUrl = utility.cdServiceUrl + "/SearchUser/" + this.selectedUser;
 
@@ -100,13 +103,13 @@
             if(response.data && response.data.SearchUserResult && response.data.SearchUserResult.Data) {
                 if(response.data.SearchUserResult.Data.length == 0)
                 {
-                this.searchMessage ="找不到用户";
+                    this.searchMessage ="找不到用户";
                 } else if(response.data.SearchUserResult.Data.length > 1)
                 {
-                this.searchMessage ="存在多个用户";
+                    this.searchMessage ="存在多个用户";
                 } else {
-                this.selectedUser = response.data.SearchUserResult.Data[0].userName;
-                this.handleSelect(response.data.SearchUserResult.Data[0]);
+                    this.selectedUser = response.data.SearchUserResult.Data[0].userName;
+                    this.handleSelect(response.data.SearchUserResult.Data[0]);
                 }
             }
             }).catch((error) => {
@@ -116,6 +119,10 @@
         loadUserInfo: function(account) {
             this.axiosCancelSource.cancel();
             if(account == null || account == '') {
+                this.userAccount = '';
+                this.username = '';
+                this.email = '';
+                this.selectedUser = "";
                 return;
             }
             var requestUrl = utility.cdServiceUrl + "/LoadUserByAccount/" + account;
