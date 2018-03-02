@@ -3,7 +3,7 @@
         <el-row class="SectionTitle">
             <el-col>
                 <span v-on:click="IsHide = !IsHide"  style="padding-left:20px">
-                     <i class="el-icon-plus" v-if="IsHide"></i><i class="el-icon-minus" v-else></i> Dealer Agreement Management / 经销商签约记录
+                     <i class="el-icon-plus" v-if="IsHide"></i><i class="el-icon-minus" v-else></i> Dealer Agreement Management / 经销商签约记录及荣誉
                 </span>
             </el-col>
         </el-row>

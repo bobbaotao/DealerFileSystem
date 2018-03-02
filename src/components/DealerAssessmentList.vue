@@ -43,7 +43,7 @@
                     </el-table-column>
                     <el-table-column prop="WF_Status" label="Status" width="150">
                         <template slot-scope="scope">
-                            {{scope.row.WF_Status}}
+                        {{getStatus(scope.row.WF_Status)}}
                         </template>
                     </el-table-column>
                 </el-table>
@@ -103,6 +103,9 @@ export default {
         },
         getFYText: function(year){
             return Utility.getFYText(year);
+        },
+        getStatus: function(status) {
+            return Utility.loadApprovalStatus(status);
         },
         handlerCreateNew: function() {
             var year = (moment().year() - 1);

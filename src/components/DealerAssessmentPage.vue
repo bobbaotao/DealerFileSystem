@@ -362,12 +362,12 @@ export default {
         this.setInitData(this.initData);
     },
     watch: {
-        Recommendation_Status: function(newStatus) {
-            if(newStatus && this.IsEdit &&  newStatus != "") {
-                var newText = Utility.loadDefaultRecommendText(newStatus);
-                this.Recommendation = newText;
-            }
-        },
+        // Recommendation_Status: function(newStatus) {
+        //     if(newStatus && this.IsEdit &&  newStatus != "") {
+        //         var newText = Utility.loadDefaultRecommendText(newStatus);
+        //         this.Recommendation = newText;
+        //     }
+        // },
         initData: function(newValue) {
             //this.setInitData(newValue);
         },
@@ -568,6 +568,7 @@ export default {
                 this.id = data.id;
                 this.Year = data.Year;
                 this.BU = data.BU;
+                this.SalesRegion = data.SalesRegion;
                 this.NatureOfContractDealer = data.NatureOfContractDealer;
                 this.DealerName = data.DealerName;
                 this.SAP_Code = data.SAP_Code;
@@ -688,6 +689,7 @@ export default {
                 Dealer_Id: this.dealerID,
                 Year: this.Year,
                 BU: this.BU,
+                SalesRegion: this.SalesRegion,
                 NatureOfContractDealer: this.NatureOfContractDealer,
                 DealerName: this.DealerName,
                 SAP_Code: this.SAP_Code,
@@ -832,6 +834,10 @@ export default {
         validateIfCanStartWF: function() {
             if(!this.DealerName || this.DealerName == "") {
                 this.$message.error("Dealer name is empty!");
+                return false;
+            }
+            if(!this.SalesRegion || this.SalesRegion == "") {
+                this.$message.error("SalesRegion is empty!");
                 return false;
             }
             if(!this.Year || this.Year == "") {

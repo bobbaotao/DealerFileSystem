@@ -114,6 +114,20 @@ module.exports = {
                 return "";
         }
     },
+    loadApprovalStatus: function(status) {
+        switch (status) {
+            case "1":
+                return "未启动";
+            case "2":
+                return "审核中";
+            case "3":
+                return "审核通过";
+            case "4":
+                return "已拒绝";
+            default:
+                return "";
+        }
+    },
     loadSTUnitList: function() {
         return [{
             label: "元",
